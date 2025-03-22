@@ -9,12 +9,26 @@
 \usepackage{amssymb}
 \usepackage{amsthm} % For theorem-like environments
 \usepackage{graphicx} % Ajout du package graphicx
+\usepackage{minted}
+\usepackage{fixltx2e}
+\usepackage{array}
+
+\newcolumntype{C}[1]{>{\centering\arraybackslash}m{#1}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}m{#1}}
+\newcolumntype{N}{@{}m{0pt}@{}}
 
 \newcounter{definitioncounter}
 \renewcommand{\thedefinitioncounter}{\arabic{definitioncounter}}
 
 \newcommand{\definition}[1]{%
     \par\noindent\textbf{Définition \refstepcounter{definitioncounter}\thedefinitioncounter.} #1 \vspace{0.5\baselineskip}
+}
+
+\newcounter{propositioncounter}
+\renewcommand{\thepropositioncounter}{\arabic{propositioncounter}}
+
+\newcommand{\proposition}[1]{%
+    \par\noindent\textbf{Proposition \refstepcounter{propositioncounter}\thepropositioncounter.} #1 \vspace{0.5\baselineskip}
 }
 
 \setlength{\parindent}{15pt} % Fixe l'indentation en début de paragraphe
@@ -35,7 +49,9 @@ Dans ce cadre, les modélisations informatiques des feux de forêt permettent de
 
 \section{Automates cellulaires}
 
-Pour réaliser nos modélisations, nous allons utiliser des automates cellulaires.
+\subsection{Généralités}
+
+Pour réaliser nos modélisations, nous allons utiliser des automates cellulaires. Les automates cellulaires permettent de représenter des systèmes avec des intéractions locales entre les éléments qui constituent ces derniers. Les automates cellulaires ont notamment été popularisés avec \textit{Le~Jeu~de~la~Vie} de \textit{Conway}.
 
 \definition{Un automate cellulaire est la donnée d'un triplet $(Q, M, f)$ avec :\begin{itemize}
     \item $Q$ un ensemble d'états
@@ -43,11 +59,11 @@ Pour réaliser nos modélisations, nous allons utiliser des automates cellulaire
     \item $f : Q^k \longrightarrow Q$ une \textit{fonction de transition} qui à l'état de la case et de $k-1$ voisins renvoie l'état suivant
 \end{itemize}}
 
-La définition de la fonction de transition dépend donc du type de voisinage utilisé. Il existe deux principaux types de voisinages, celui de \textit{von Neumann} et celui de \textit{Moore}. Nous avons choisi d'utiliser le voisinage de \textit{Moore} pour nos modélisations.
+// TODO : Améliorer la définition des états de transition
+
+La définition de la fonction de transition dépend donc du type de voisinage utilisé. Il existe deux principaux types de voisinages, celui de \textit{von Neumann} et celui de \textit{Moore}. Nous avons choisi d'utiliser le voisinage de \textit{Moore} pour nos modélisations pour prendre en compte le plus d'intéractions possibles, celui de \textit{von Neumann} étant limitant notamment sur les diagonales.
 
 \definition{Le voisinage de \textit{Moore} est composé du noeud et de ses 8 voisins.\\ \hspace{1cm} Dans le cas du voisinage de \textit{Moore}, on a donc $f : Q^9 \longrightarrow Q$}
-
-\pagebreak
 
 \begin{figure}[!h]
     \centering
@@ -56,9 +72,147 @@ La définition de la fonction de transition dépend donc du type de voisinage ut
     \label{fig:enter-label}
 \end{figure}
 
-tester
+Il serait possible dans une optique d'avoir des modèles encore plus précis d'utiliser des voisinages de \textit{Moore} étendus, avec plusieurs rayons de voisins, mais dans un soucis de simplicité nous nous sommes restreints à un rayon.
+
+\subsection{Représentation d'un forêt}
+
+Afin de représenter une forêt avec un automate cellulaire nous avons défini une liste d'état que les cases pouvaient prendre.
+
+\definition{Les états possibles sont :
+\begin{itemize}
+    \item Arbres
+    \item Arbres denses
+    \item Champs
+    \item Chemins/Tranchée
+    \item Feu
+    \item Case brulée\textsuperscript{*}
+    \item Eau\textsuperscript{*}
+\end{itemize}
+A noter que les cases $(*)$ ne peuvent brûler.}
+
+Nous avons choisi de travailler avec une matrice de taille $256 \times 256$ pour des raisons techniques : au delà le temps de calcul devenait trop long et l'ajout de lignes/colonnes ne représentait pas un intérêt suffisant pour le faire par rapport au temps de calcul que celà impliquait.
 
 \section{Modèle d'Alexandridis}
 
+Dans un premier temps il est possible de faire une modélisation naïve des feux de forêt en associant à chaque case une probabilité fixe de brûler si un de ses voisins est en feu. Une telle tentative a été réalisée avec des résultats quelque peu satisfaisants, c'est pourquoi l'objectif de cette deuxième partie est de voir un modèle plus poussé de modélisation des feux de forêts, dit modèle d'\textit{Alexandridis}.
+
+\subsection{Présentation du modèle}
+
+Le modèle d'\textit{Alexandridis} prend en compte divers phénomènes pour modéliser cette propagation. Dans la suite nous avons choisi de nous restreindre à la densité de végétation, au type de végétation ainsi qu'au vent dans la zone. Le modèle original quant à lui prend aussi en compte l'élévation du terrain.
+
+\proposition{On utilise les règles de transition suivantes, pour $(i,j) \in \mathbb{N}^2$, $t \in \mathbb{N}$ :
+\begin{itemize}
+    \item Si $m_{i,j} (t) = $ \mintinline{latex}{feu} alors $m_{i,j} (t+1) = $ \mintinline{latex}{brulé}
+    \item Si $m_{i,j} (t) = $ \mintinline{latex}{feu} alors $m_{i \pm 1,j \pm 1} (t+1) = $ \mintinline{latex}{feu} avec une probabilité $p_b$
+    \item Si $m_{i,j} (t) = $ \mintinline{latex}{brulé} alors $m_{i,j} (t+1) = $ \mintinline{latex}{brulé}
+\end{itemize}}
+
+\proposition{La probabilité $p_b$ qu'une case brûle est définie par
+$p_b = p_h (1 + p_{veg}) (1 + p_{den}) p_{vent}$ avec $p_h = 0.27$ une constante, $p_{veg}$ et $p_{den}$ relatives au type de case.
+}
+
+\begin{figure}[!h]
+    \centering
+    \renewcommand{\arraystretch}{2}
+    \setlength{\extrarowheight}{-3pt}
+    \begin{tabular}{ |>{\centering\arraybackslash}p{4cm}|>{\centering\arraybackslash}p{2cm}|>{\centering\arraybackslash}p{2cm}| }
+        \cline{2-3}
+        \multicolumn{1}{c|}{} & $p_{veg}$ & $p_{den}$ \\
+        \hline 
+        Arbres & $0.3$ & $0.3$ \\ 
+        \hline
+        Arbres denses & $0.3$ & $0$ \\ 
+        \hline
+        Champs & $-0.1$ & $0$ \\
+        \hline 
+    \end{tabular}
+    \caption{Probabilités $p_{veg}$ et $p_{den}$ selon le type de végétation}
+\end{figure}
+
+\proposition{La probabilité $p_{vent}$ liée au vent est définie par
+\\ $p_{vent} = exp(0.045 v) \times exp (0.131 v \times (cos(\theta) - 1))$ avec $\theta$ l'angle entre la propagation du feu et la direction du vent, et $v$ la vitesse du vent (en $m/s$)
+}
+
+\subsection{Résultats}
+
+Dans un premier temps comparons les résultats de la modélisation naïve et celui du modèle d'\textit{Alexandridis} :
+
+\begin{figure}[!h]
+    \centering
+    \begin{minipage}{0.35\textwidth}
+      \centering
+      \includegraphics[width=.8\linewidth]{pictures/model1/land_200.png}
+      \caption{Solution naïve}\label{Fig:Data1}
+    \end{minipage}
+    \hfil
+    \begin{minipage}{0.35\textwidth}
+      \centering
+      \includegraphics[width=.8\linewidth]{pictures/model2/land_200_nowind.png}
+      \caption{\textit{Alexandridis}}\label{Fig:Data2}
+    \end{minipage}
+ \end{figure}
+
+On remarque que la solution naïve a une propagation plus lente et un front de feu plus étendu que celui du modèle d'\textit{Alexandridis}.
+
+Comparons maintenant deux modélisations avec des densités de végétation différentes, et sous $15 m/s$ de vent vers l'est :
+
+\begin{figure}[!h]
+    \centering
+    \begin{minipage}{0.35\textwidth}
+      \centering
+      \includegraphics[width=.8\linewidth]{pictures/model2/land_200_wind_notdense.png}
+      \caption{Végétation normale}\label{Fig:Data1}
+    \end{minipage}\hfil
+    \begin{minipage}{0.35\textwidth}
+      \centering
+      \includegraphics[width=.8\linewidth]{pictures/model2/land_200_wind_dense.png}
+      \caption{Végétation dense}\label{Fig:Data2}
+    \end{minipage}
+ \end{figure}
+
+On remarque principalement deux effets notoires sur les deux modélisations.
+
+D'une part, la progression dans une végétation normale est moins rapide (ce qui fait sens empiriquement), et donc le front est moins étendu. La surface brulée dans le cas de la densité normale présente aussi des trous là où celle de la densité élevée est lisse, ce phénomène est expliqué par le fait que $p_b$ est plus élevée pour une densité plus forte.
+
+D'autre part, dans les deux modélisations on voit clairement l'impact du vent : le front de feu s'est déplacé suivant un cône poussé par le vent.
+
+\subsection{Considérations algorithmiques}
+
+Cette sous partie a pour objectif de rendre compte de l'implémentation de la modélisation réalisée et de comprendre le choix de $256 \times 256$.
+
+Voici les complexités des différentes fonctions créés :
+
+\begin{itemize}
+    \item Calcul de $p_b$ : $O(1)$
+    \item Calcul du passage de $t$ à $t+1$ : $O(n^2)$ avec $n$ la longueur de la grille, avec une estimation de $100$ opérations élémentaires pour chaque case
+    \item Affichage de l'état $t$ : $O(m^2 \times n^2)$ avec $n$ la longueur de la grille et $m$ la taille d'une case représentée sur l'écran
+\end{itemize}
+
+Ainsi pour $N$ itérations, on trouve une complexité totale de $O(m^2 \times n^2 \times N)$, numériquement avec $n$ = 256, $m$ = 2 et $N$ = 200 on trouve $\approx 10^5$, et donc on en déduit grossièrement $\approx 10^7$ opérations élémentaires, pour un temps de calcul d'environ $5$ secondes.
+
+On comprend donc pourquoi augmenter la valeur de $n$ (toutes choses égales par ailleurs) ou de $N$ conduirait à des simulations plus longues.
+
 \section{Transformations}
+
+// TODO : Final part
+
+\section{Annexe}
+
+\subsection{Choix d'implémentation}
+
+Pour implémenter les différents modèles nous avons choisi d'utiliser le langage \mintinline{latex}{C99}. Le choix du langage a été motivé principalement par deux aspects :
+
+\begin{itemize}
+    \item Le \mintinline{latex}{C} permet par son bas niveau de gagner un certain temps d'exécution par rapport à d'autres langages, utile ici au vu du nombre de calculs à effectuer dans nos grilles.
+    \item Le \mintinline{latex}{C} étant plus utilisé que le \mintinline{latex}{OCaml} bénéficie par conséquent de plus de bibliothèques externes.
+\end{itemize}
+
+Nous avons utilisé les bibliothèques non standard suivantes :
+
+\begin{itemize}
+    \item \mintinline{latex}{SDL2} : Pour réaliser une interface graphique afin de visualiser les évolutions.
+    \item \mintinline{latex}{cJSON} : Pour manipuler des fichiers \mintinline{latex}{JSON} et représenter les grilles afin de pouvoir les importer.
+    \item \mintinline{latex}{png} : Pour créer des fichiers \mintinline{latex}{PNG} et les manipuler en \mintinline{latex}{C} afin d'exporter nos simulations.
+\end{itemize}
+
 \end{document}
