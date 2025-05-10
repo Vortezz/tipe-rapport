@@ -52,36 +52,36 @@
 
 Avec le changement climatique, les feux de forêt sont de plus en plus fréquents et dévastateurs, à l'image de ceux en Californie en janvier 2025.
 
-Dans ce cadre, les modélisations informatiques des feux de forêt permettent de simuler l'évolution des feux, afin de prévoir les zones à risques. Mais les simulations informatiques permettent aussi de tester l'impact de certaines transformations sur ces feux, afin de trouver des manières de réduire l'impact des catastrophes, sans pour autant dénaturer les forêts.
+Dans ce cadre, les modélisations informatiques des feux de forêt permettent de simuler leur évolution et ainsi de prévoir les zones à risque. Elles offrent également la possibilité de tester l'impact de certaines transformations sur ces incendies, afin d'identifier des moyens de réduire les conséquences des catastrophes sans dénaturer les forêts.
 
 \section{Automates cellulaires}
 
 \subsection{Généralités}
 
-Pour réaliser nos modélisations, nous allons utiliser des automates cellulaires. Les automates cellulaires permettent de représenter des systèmes avec des intéractions locales entre les éléments qui constituent ces derniers. Les automates cellulaires ont notamment été popularisés avec \textit{Le~Jeu~de~la~Vie} de \textit{Conway}.
+Pour réaliser nos modélisations, nous allons utiliser des automates cellulaires. Ces outils permettent de représenter des systèmes avec des interactions locales entre les éléments qui les constituent. Les automates cellulaires ont notamment été popularisés avec \textit{Le~Jeu~de~la~Vie} de \textit{Conway}.
 
 \definition{Un automate cellulaire est la donnée d'un triplet $(Q, M, f)$ avec :\begin{itemize}
     \item $Q$ un ensemble d'états
-    \item $M$ une matrice de taille $n \times m$, où chaque $m_{i,j}$ représente une case de la grille
+    \item $M$ une matrice de taille $n \times m$, où chaque $m_{i,j}$ représente une cellule de la grille
     \item $f : \mathcal{M}_{n,m}(Q) \longrightarrow \mathcal{M}_{n,m}(Q)$ une \textit{fonction de transition} qui à une grille renvoie la grille suivante
 \end{itemize}}
 
-La définition de la fonction de transition dépend donc du type de voisinage utilisé. Il existe deux principaux types de voisinages, celui de \textit{von Neumann} et celui de \textit{Moore}. Nous avons choisi d'utiliser le voisinage de \textit{Moore} pour nos modélisations pour prendre en compte le plus d'intéractions possibles, celui de \textit{von Neumann} étant limitant notamment sur les diagonales.
+La définition de la fonction de transition dépend donc du type de voisinage considéré. Il existe deux principaux types de voisinages : celui de \textit{von Neumann} et celui de \textit{Moore}. Nous avons choisi d'utiliser le voisinage de \textit{Moore} pour nos modélisations pour prendre en compte le plus d'intéractions possibles, celui de \textit{von Neumann} étant plus limitatif, notamment en ce qui concerne les interactions diagonales.
 
-\definition{Le voisinage de \textit{Moore} est composé du noeud et de ses 8 voisins.}
+\definition{Le voisinage de \textit{Moore} est composé de la cellule centrale et de ses 8 voisins adjacents (horizontalement, verticalement et diagonalement).}
 
-\begin{figure}[!h]
+\begin{figure}[!ht]
     \centering
     \includegraphics[width=0.20\linewidth]{pictures/moore.png}
     \caption{Voisinage de Moore}
     \label{fig:enter-label}
 \end{figure}
 
-Il serait possible dans une optique d'avoir des modèles encore plus précis d'utiliser des voisinages de \textit{Moore} étendus, avec plusieurs rayons de voisins, mais dans un soucis de simplicité nous nous sommes restreints à un rayon.
+Il serait possible dans une optique d'avoir des modèles encore plus précis d'utiliser des voisinages de \textit{Moore} étendus, avec plusieurs rayons de voisins. Cependant par souci de simplicité nous nous sommes restreints à un rayon.
 
 \subsection{Représentation d'un forêt}
 
-Afin de représenter une forêt avec un automate cellulaire nous avons défini une liste d'état que les cases pouvaient prendre.
+Afin de représenter une forêt avec un automate cellulaire, nous avons défini une liste d'états que les cellules pouvaient prendre.
 
 \definition{Les états possibles sont :
 \begin{itemize}
@@ -89,20 +89,20 @@ Afin de représenter une forêt avec un automate cellulaire nous avons défini u
     \item Arbres denses
     \item Champs
     \item Feu
-    \item Case brulée\textsuperscript{*}
+    \item Case brûlée\textsuperscript{*}
     \item Eau\textsuperscript{*}
 \end{itemize}
 A noter que les cases $(*)$ ne peuvent brûler.}
 
-Nous avons choisi de travailler avec une matrice de taille $256 \times 256$ pour des raisons techniques : au delà le temps de calcul devenait trop long et l'ajout de lignes/colonnes ne représentait pas un intérêt suffisant pour le faire par rapport au temps de calcul que celà impliquait.
+Nous avons choisi de travailler avec une matrice de taille $256 \times 256$ pour des raisons techniques : au-delà le temps de calcul devenait trop long, et l'ajout de lignes/colonnes ne représentait pas un intérêt suffisant au regard du temps de calcul que cela impliquait.
 
 \section{Modèle d'Alexandridis}
 
-Dans un premier temps il est possible de faire une modélisation naïve des feux de forêt en associant à chaque case une probabilité fixe de brûler si un de ses voisins est en feu. Une telle tentative a été réalisée avec des résultats quelque peu satisfaisants, c'est pourquoi l'objectif de cette deuxième partie est de voir un modèle plus poussé de modélisation des feux de forêts, dit modèle d'\textit{Alexandridis}.
+Dans un premier temps, il est possible de réaliser une modélisation simple des feux de forêt en associant à chaque cellule une probabilité fixe de s'enflammer si l'un de ses voisins est en feu. Une telle tentative a donné des résultats mitigés. C'est pourquoi l'objectif de cette deuxième partie est de présenter un modèle plus avancé de modélisation des feux de forêts, appelé modèle d'\textit{Alexandridis}.
 
 \subsection{Présentation du modèle}
 
-Le modèle d'\textit{Alexandridis} prend en compte divers phénomènes pour modéliser cette propagation. Dans la suite nous avons choisi de nous restreindre à la densité de végétation, au type de végétation ainsi qu'au vent dans la zone. Le modèle original quant à lui prend aussi en compte l'élévation du terrain.
+Le modèle d'\textit{Alexandridis} prend en compte divers phénomènes pour simuler la propagation des incendies. Par la suite, nous avons choisi de nous concentrer sur la densité de végétation, le type de végétation ainsi que le vent dans la zone. Le modèle original prend également en considération l'élévation du terrain.
 
 \proposition{On utilise les règles de transition suivantes, pour $(i,j) \in \mathbb{N}^2$, $t \in \mathbb{N}$ :
 \begin{itemize}
@@ -111,11 +111,11 @@ Le modèle d'\textit{Alexandridis} prend en compte divers phénomènes pour mod�
     \item Si $m_{i,j} (t) = $ \mintinline{latex}{brulé} alors $m_{i,j} (t+1) = $ \mintinline{latex}{brulé}
 \end{itemize}}
 
-\proposition{La probabilité $p_b$ qu'une case brûle est définie par
-$p_b = p_h (1 + p_{veg}) (1 + p_{den}) p_{vent}$ avec $p_h = 0.27$ une constante, $p_{veg}$ et $p_{den}$ relatives au type de case.
+\proposition{La probabilité $p_b$ qu'une cellule brûle est définie par
+$p_b = p_h (1 + p_{veg}) (1 + p_{den}) p_{vent}$ avec $p_h = 0.27$ une constante, et $p_{veg}$ et $p_{den}$ des coefficients relatifs au type de cellule.
 }
 
-\begin{figure}[!h]
+\begin{figure}[!ht]
     \centering
     \renewcommand{\arraystretch}{2}
     \setlength{\extrarowheight}{-3pt}
@@ -137,7 +137,7 @@ $p_b = p_h (1 + p_{veg}) (1 + p_{den}) p_{vent}$ avec $p_h = 0.27$ une constante
 \\ $p_{vent} = \exp (0.045 v) \times \exp (0.131 v \times (\cos (\theta) - 1))$ avec $\theta$ l'angle entre la propagation du feu et la direction du vent, et $v$ la vitesse du vent (en $m/s$)
 }
 
-\begin{figure}[!h]
+\begin{figure}[!ht]
     \centering
     \begin{tikzpicture}[> = stealth]
         \coordinate (a) at (1,4);
@@ -156,13 +156,16 @@ $p_b = p_h (1 + p_{veg}) (1 + p_{den}) p_{vent}$ avec $p_h = 0.27$ une constante
         \draw[ultra thick,red, ->]  (d) -- node[above left] {\normalsize Vent} (e);
         \draw[ultra thick,blue,->]  (d) -- node[below] {\normalsize Propagation du feu} (f);
     \end{tikzpicture}
-    \caption{Schémas pour le vent}
+    \caption{Configurations de vent}
 \end{figure}
+
+On a $\theta_1 > \theta_2$ et une vitesse plus élevée dans la seconde situation, ainsi la probabilité $p_{vent}$ sera plus élevée dans la seconde situation.
+
 \subsection{Résultats}
 
-Dans un premier temps comparons les résultats de la modélisation naïve et celui du modèle d'\textit{Alexandridis} :
+Comparons d'abord les résultats de la modélisation naïve avec ceux du modèle d'\textit{Alexandridis} :
 
-\begin{figure}[!h]
+\begin{figure}[!ht]
     \centering
     \begin{minipage}{0.35\textwidth}
       \centering
@@ -177,11 +180,11 @@ Dans un premier temps comparons les résultats de la modélisation naïve et cel
     \end{minipage}
  \end{figure}
 
-On remarque que la solution naïve a une propagation plus lente et un front de feu plus étendu que celui du modèle d'\textit{Alexandridis}.
+On observe que la solution naïve présente une propagation plus lente et un front de feu plus étendu que le modèle d'\textit{Alexandridis}.
 
-Comparons maintenant deux modélisations avec des densités de végétation différentes, et sous $15 m/s$ de vent vers l'est :
+Comparons maintenant deux modélisations du modèle d'Alexandridis avec des densités de végétation différentes, sous un vent de $15 m/s$ orienté vers l'est :
 
-\begin{figure}[!h]
+\begin{figure}[!ht]
     \centering
     \begin{minipage}{0.35\textwidth}
       \centering
@@ -195,53 +198,56 @@ Comparons maintenant deux modélisations avec des densités de végétation diff
     \end{minipage}
  \end{figure}
 
-On remarque principalement deux effets notoires sur les deux modélisations.
+On remarque principalement deux effets importants sur les deux modélisations.
 
-D'une part, la progression dans une végétation normale est moins rapide (ce qui fait sens empiriquement), et donc le front est moins étendu. La surface brulée dans le cas de la densité normale présente aussi des trous là où celle de la densité élevée est lisse, ce phénomène est expliqué par le fait que $p_b$ est plus élevée pour une densité plus forte.
+Premièrement, la progression du feu dans une végétation normale est plus lente (ce qui est cohérent avec l'observation empirique), et le front de feu est donc moins étendu. La surface brûlée dans le cas de la densité normale présente également des zones non brûlées, contrairement à celle de la densité élevée qui est plus uniforme. Ce phénomène s'explique par une probabilité $p_b$ plus élevée pour une densité plus forte.
 
-D'autre part, dans les deux modélisations on voit clairement l'impact du vent : le front de feu s'est déplacé suivant un cône poussé par le vent.
+Deuxièmement, dans les deux modélisations, l'impact du vent est clairement visible : le front de feu s'est propagé selon un cône poussé par le vent.
 
 \subsection{Considérations algorithmiques}
 
-Cette sous partie a pour objectif de rendre compte de l'implémentation de la modélisation réalisée et de comprendre le choix de $256 \times 256$.
+Cette sous-partie a pour objectif de présenter l'implémentation de la modélisation réalisée et de justifier le choix d'une grille de taille $256 \times 256$.
 
-Voici les complexités des différentes fonctions créés :
+Voici les complexités temporelles des différentes fonctions créées :
 
 \begin{itemize}
     \item Calcul de $p_b$ : $O(1)$
-    \item Calcul du passage de $t$ à $t+1$ : $O(n^2)$ avec $n$ la longueur de la grille, avec une estimation de $100$ opérations élémentaires pour chaque case
-    \item Affichage de l'état $t$ : $O(m^2 \times n^2)$ avec $n$ la longueur de la grille et $m$ la taille d'une case représentée sur l'écran
+    \item Calcul du passage de l'état à l'instant $t$ à l'état à l'instant $t+1$ : $O(n^2)$, où $n$ est la dimension de la grille. Cette estimation repose sur environ $100$ opérations élémentaires (lectures, comparaisons, affectations, calculs arithmétiques, etc.) pour chaque cellule.
+    \item Affichage de l'état à l'instant $t$ : $O(m^2 \times n^2)$, où $n$ est la dimension de la grille et $m$ est la taille en pixels d'une cellule représentée à l'écran.
 \end{itemize}
 
-Ainsi pour $N$ itérations, on trouve une complexité totale de $O(m^2 \times n^2 \times N)$, numériquement avec $n$ = 256, $m$ = 2 et $N$ = 200 on trouve $\approx 10^5$, et donc on en déduit grossièrement $\approx 10^7$ opérations élémentaires, pour un temps de calcul d'environ $5$ secondes.
+Ainsi, pour $N$ itérations, la complexité totale est de $O(m^2 \times n^2 \times N)$. Numériquement, avec $n$ = 256, $m$ = 2 et $N$ = 200 on trouve $\approx 10^5$, et donc on en déduit grossièrement $\approx 10^7$ opérations élémentaires.
+
+En considérant un temps d'exécution moyen par opération élémentaire, cela correspond grossièrement à un temps de calcul d'environ 5 secondes.
 
 On comprend donc pourquoi augmenter la valeur de $n$ (toutes choses égales par ailleurs) ou de $N$ conduirait à des simulations plus longues.
 
 \section{Transformations}
 
-Puisque nous avons maintenant un modèle pour réaliser des simulations, nous allons nous intéresser aux transformations réalisables, notamment ici dans le cadre de cette étude aux tranchées et chemins.
+Puisque nous disposons maintenant d'un modèle pour réaliser des simulations, nous allons nous intéresser aux transformations réalisables, notamment ici, dans le cadre de cette étude, aux tranchées et chemins.
 
 \subsection{Explications}
 
-Nous allons donc considérer la transformation suivante : l'ajout de tranchées ou de chemins forestiers, des transformations légères dans les forêts qui permettent de ne pas dénaturer ces dernières.
+Nous allons donc considérer l'ajout de tranchées ou de chemins forestiers, des transformations légères qui permettent de limiter l'impact des feux sans dénaturer les forêts.
 
 \proposition{On ajoute un nouvel état Chemins/Tranchées avec $p_{veg} = -0.55$ et $p_{den} = 0$ à notre modèle.}
 
 \subsection{Résultats}
 
-L'objectif est maintenant de voir l'impact des tranchées, avec des configurations différentes de vent et de longueur de tranchées.
+L'objectif est maintenant d'observer l'impact des tranchées avec différentes configurations de vent et de largeur de tranchées.
 
 \subsubsection{Tranchées/Sans tranchées}
 
-La première comparaison intéressante et de regarder la différence de propagation de feu avec et sans tranchées.
+La première comparaison intéressante est d'étudier la différence de propagation du feu avec et sans tranchées.
 
-\begin{figure}[!h]
+\begin{figure}[!ht]
     \centering
     \begin{minipage}{0.35\textwidth}
       \centering
       \includegraphics[width=.8\linewidth]{pictures/trans/no_treach.png}
       \caption{Sans tranchées}\label{Fig:Data5}
-    \end{minipage}\hfill
+    \end{minipage}
+    \hfil
     \begin{minipage}{0.35\textwidth}
       \centering
       \includegraphics[width=.8\linewidth]{pictures/trans/treach.png}
@@ -249,19 +255,19 @@ La première comparaison intéressante et de regarder la différence de propagat
     \end{minipage}
 \end{figure}
 
-On constate donc en comparant la\fig{8}et la\fig{9}que la présence de tranchées permet de bloquer le feu. Il est possible de critiquer le résultat dans la mesure où on a un nombre d'itérations limitées (ici $200$), et que le feu aurait donc plus de temps pour se propager.
+En comparant la\fig{8}et la\fig{9}on constate que la présence de tranchées permet de bloquer la propagation du feu. Il est important de noter que ce résultat est observé pour un nombre d'itérations limité (ici $200$), et qu'une simulation plus longue pourrait montrer une propagation au-delà des tranchées.
 
 \subsubsection{Vent faible/Vent fort}
 
-Dans un deuxième temps, comparons deux situations de vent différentes, dans le même sens mais avec une vitesse différente.
+Dans un deuxième temps, comparons deux situations avec un vent orienté dans la même direction mais de vitesse différente.
 
-\begin{figure}[!h]
+\begin{figure}[!ht]
     \centering
     \begin{minipage}{0.35\textwidth}
       \centering
       \includegraphics[width=.8\linewidth]{pictures/trans/treach_15.png}
       \caption{$15$ m/s de vent}\label{Fig:Data7}
-    \end{minipage}\hfill
+    \end{minipage}\hfil
     \begin{minipage}{0.35\textwidth}
       \centering
       \includegraphics[width=.8\linewidth]{pictures/trans/treach_30.png}
@@ -269,21 +275,21 @@ Dans un deuxième temps, comparons deux situations de vent différentes, dans le
     \end{minipage}
 \end{figure}
 
-On constate donc en comparant la\fig{10}et la\fig{11}que la situation où le vent est plus fort rend moins efficace la tranchée/le chemin. Ce résultat est assez logique empiriquement dans la mesure où un vent plus fort permet au feu d'aller plus loin, et donc de passer plus facilement la tranchée.
+En comparant la\fig{10}et la\fig{11}on observe qu'un vent plus fort diminue l'efficacité des tranchées ou chemins. Ce résultat est empiriquement logique : un vent plus intense permet au feu de se propager plus rapidement et donc de franchir plus facilement l'obstacle.
 
-Il est tout de même intéressant de mentionner que même si le feu passe outre la tranchée, moins de 25\% de cette dernière est brulée à la fin (dans la zone impactée par le feu)
+Il est tout de même intéressant de mentionner que, même lorsque le feu parvient à traverser la tranchée, moins de 25\% de sa surface (dans la zone impactée par le feu) est brûlée à la fin de la simulation.
 
 \subsubsection{Tranchée mince/Tranchée large}
 
-Dans un dernier temps, comparons deux tailles de tranchée.
+Dans un dernier temps, comparons deux largeurs de tranchée.
 
-\begin{figure}[!h]
+\begin{figure}[!ht]
     \centering
     \begin{minipage}{0.35\textwidth}
       \centering
       \includegraphics[width=.8\linewidth]{pictures/trans/treach.png}
       \caption{Tranchée de $8$m}\label{Fig:Data9}
-    \end{minipage}\hfill
+    \end{minipage}\hfil
     \begin{minipage}{0.35\textwidth}
       \centering
       \includegraphics[width=.8\linewidth]{pictures/trans/little_treach.png}
@@ -291,37 +297,37 @@ Dans un dernier temps, comparons deux tailles de tranchée.
     \end{minipage}
 \end{figure}
 
-On constate en comparant la\fig{12}et la\fig{13}que plus une tranchée est large, plus elle réduit les possibilités de propagation du feu. Entre ces deux simulations c'est la grande tranchée verticale qui a été réduite horizontalement et on voit bien l'impact de ce changement.
+En comparant la\fig{12}et la\fig{13}on constate qu'une tranchée plus large est plus efficace pour limiter la propagation du feu. Entre ces deux simulations, la grande tranchée verticale a été réduite horizontalement, et l'impact de ce changement est clairement visible.
 
-De plus on observe sur la\fig{13}que le front de feu est encore présent, et donc que si la simulation durait plus longtemps une zone encore plus vaste serait brûlée.
+De plus, on observe sur la\fig{13}que le front de feu est toujours présent, ce qui suggère qu'une simulation plus longue entraînerait la combustion d'une zone encore plus étendue.
 
 \subsection{Possibles améliorations}
 
-Il est possible d'aller plus loin dans les simulations, nous nous sommes limités à un modèle intermédiaire, prenant en compte le type de végétation, la densité de cette dernière ainsi que le vent.
+Bien que nous ayons obtenu des résultats intéressants avec ce modèle intermédiaire, qui prend en compte le type et la densité de la végétation ainsi que le vent, il est possible d'aller plus loin dans les simulations.
 
-Il serait donc envisageable de prendre en compte d'autres paramètres dans la modélisation tels que l'élévation, l'humidité ou la température.
+Il serait donc envisageable d'intégrer d'autres paramètres importants tels que l'élévation, l'humidité ou la température.
 
-De plus il est aussi possible de considérer d'autres transformations telles que la réduction de la densité de végétation car on a vu en\fig{7}qu'une végétation dense favorisait la propagation, ou encore considérer une intéraction plus complexe avec les cours d'eau/lacs, ici considérés uniquement comme des zones bloquant totalement le feu alors qu'elles peuvent lui permettre de tout de même progresser.
+De plus, on pourrait considérer d'autres transformations pour la gestion des incendies. Par exemple, la réduction de la densité de végétation, dont la\fig{7}a permis d'observer l'impact positif sur la limitation de la propagation. Il serait également pertinent d'affiner la modélisation de l'interaction avec les cours d'eau et les lacs, qui sont actuellement considérés comme des obstacles infranchissables, alors qu'ils peuvent influencer la progression du feu de manière plus complexe.
 
 \section{Annexe}
 
 \subsection{Choix d'implémentation}
 
-Pour implémenter les différents modèles nous avons choisi d'utiliser le langage \mintinline{latex}{C99}. Le choix du langage a été motivé principalement par deux aspects :
+Pour implémenter les différents modèles, nous avons choisi le langage \mintinline{latex}{C99}. Ce choix a été principalement motivé par deux aspects :
 
 \begin{itemize}
-    \item Le \mintinline{latex}{C} permet par son bas niveau de gagner un certain temps d'exécution par rapport à d'autres langages, utile ici au vu du nombre de calculs à effectuer dans nos grilles.
-    \item Le \mintinline{latex}{C} étant plus utilisé que le \mintinline{latex}{OCaml}, il bénéficie par conséquent de plus de bibliothèques externes.
+    \item Le bas niveau du \mintinline{latex}{C} offre un gain significatif en temps d'exécution par rapport à d'autres langages. Ceci est particulièrement avantageux compte tenu du volume important de calculs nécessaires pour simuler l'évolution des états dans nos grilles.
+    \item Le \mintinline{latex}{C}, étant plus largement répandu que l'\mintinline{latex}{OCaml}, bénéficie d'un écosystème de bibliothèques externes plus vaste et plus mature.
 \end{itemize}
 
 Nous avons utilisé les bibliothèques non standard suivantes :
 
 \begin{itemize}
-    \item \mintinline{latex}{SDL2} : Pour réaliser une interface graphique afin de visualiser les évolutions.
-    \item \mintinline{latex}{cJSON} : Pour manipuler des fichiers \mintinline{latex}{JSON} et représenter les grilles afin de pouvoir les importer.
-    \item \mintinline{latex}{png} : Pour créer des fichiers \mintinline{latex}{PNG} et les manipuler en \mintinline{latex}{C} afin d'exporter nos simulations.
+    \item \mintinline{latex}{SDL2} : Pour la création d'une interface graphique permettant de visualiser l'évolution des simulations en temps réel.
+    \item \mintinline{latex}{cJSON} : Pour la manipulation de fichiers \mintinline{latex}{JSON}, format utilisé pour représenter et importer les configurations initiales des grilles.
+    \item \mintinline{latex}{png} : Pour la création et la manipulation de fichiers \mintinline{latex}{PNG}, afin d'exporter les résultats des simulations sous forme d'images.
 \end{itemize}
 
-Pour créer plus facilement les grilles, nous avons créé un site web avec \mintinline{latex}|React.JS|.
+Afin de faciliter la création et la configuration des grilles initiales, nous avons développé un site web interactif en \mintinline{latex}|React.JS|. Cette interface web permet de concevoir visuellement les forêts initiales avant de les exporter au format \mintinline{latex}{JSON} pour être utilisées par notre simulateur en \mintinline{latex}{C}.
 
 \end{document}
