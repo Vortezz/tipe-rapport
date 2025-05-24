@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2025.1.4)  10 MAY 2025 13:43
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2025.1.4)  24 MAY 2025 15:34
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
@@ -543,32 +543,100 @@ File: pgfmodulematrix.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \tikz@expandcount=\count348
  (/usr/local/texlive/2024/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarytopaths.code.tex
 File: tikzlibrarytopaths.code.tex 2023-01-15 v3.1.10 (3.1.10)
-))) (/usr/local/texlive/2024/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibraryangles.code.tex
+))) (/usr/local/texlive/2024/texmf-dist/tex/latex/algorithm2e/algorithm2e.sty
+Package: algorithm2e 2017/07/18 v5.2 algorithms environments
+\c@AlgoLine=\count349
+ (/usr/local/texlive/2024/texmf-dist/tex/latex/base/ifthen.sty
+Package: ifthen 2024/03/16 v1.1e Standard LaTeX ifthen package (DPC)
+)
+\algocf@hangindent=\skip60
+ (/usr/local/texlive/2024/texmf-dist/tex/latex/ifoddpage/ifoddpage.sty
+Package: ifoddpage 2022/10/18 v1.2 Conditionals for odd/even page detection
+\c@checkoddpage=\count350
+) (/usr/local/texlive/2024/texmf-dist/tex/latex/tools/xspace.sty
+Package: xspace 2014/10/28 v1.13 Space after command names (DPC,MH)
+) (/usr/local/texlive/2024/texmf-dist/tex/latex/relsize/relsize.sty
+Package: relsize 2013/03/29 ver 4.1
+)
+\skiptotal=\skip61
+\skiplinenumber=\skip62
+\skiprule=\skip63
+\skiphlne=\skip64
+\skiptext=\skip65
+\skiplength=\skip66
+\algomargin=\skip67
+\skipalgocfslide=\skip68
+\algowidth=\dimen310
+\inoutsize=\dimen311
+\inoutindent=\dimen312
+\interspacetitleruled=\dimen313
+\interspacealgoruled=\dimen314
+\interspacetitleboxruled=\dimen315
+\algocf@ruledwidth=\skip69
+\algocf@inoutbox=\box79
+\algocf@inputbox=\box80
+\AlCapSkip=\skip70
+\AlCapHSkip=\skip71
+\algoskipindent=\skip72
+\algocf@nlbox=\box81
+\algocf@hangingbox=\box82
+\algocf@untilbox=\box83
+\algocf@skipuntil=\skip73
+\algocf@capbox=\box84
+\algocf@lcaptionbox=\skip74
+\algoheightruledefault=\skip75
+\algoheightrule=\skip76
+\algotitleheightruledefault=\skip77
+\algotitleheightrule=\skip78
+\c@algocfline=\count351
+\c@algocfproc=\count352
+\c@algocf=\count353
+\algocf@algoframe=\box85
+\algocf@algobox=\box86
+) (/usr/local/texlive/2024/texmf-dist/tex/latex/algorithmicx/algpseudocode.sty
+Package: algpseudocode 
+ (/usr/local/texlive/2024/texmf-dist/tex/latex/algorithmicx/algorithmicx.sty
+Package: algorithmicx 2005/04/27 v1.2 Algorithmicx
+
+Document Style algorithmicx 1.2 - a greatly improved `algorithmic' style
+\c@ALG@line=\count354
+\c@ALG@rem=\count355
+\c@ALG@nested=\count356
+\ALG@tlm=\skip79
+\ALG@thistlm=\skip80
+\c@ALG@Lnr=\count357
+\c@ALG@blocknr=\count358
+\c@ALG@storecount=\count359
+\c@ALG@tmpcounter=\count360
+\ALG@tmplength=\skip81
+)
+Document Style - pseudocode environments for use with the `algorithmicx' style
+) (/usr/local/texlive/2024/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibraryangles.code.tex
 File: tikzlibraryangles.code.tex 2023-01-15 v3.1.10 (3.1.10)
 ) (/usr/local/texlive/2024/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibraryquotes.code.tex
 File: tikzlibraryquotes.code.tex 2023-01-15 v3.1.10 (3.1.10)
 )
-\c@definitioncounter=\count349
-\c@propositioncounter=\count350
+\c@definitioncounter=\count361
+\c@propositioncounter=\count362
  (./main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Info: Redefining \degres on input line 44.
-LaTeX Info: Redefining \up on input line 44.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Info: Redefining \degres on input line 46.
+LaTeX Info: Redefining \up on input line 46.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -608,16 +676,16 @@ LaTeX Info: Redefining \up on input line 44.
 
 (/usr/local/texlive/2024/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count351
-\scratchdimen=\dimen310
-\scratchbox=\box79
-\nofMPsegments=\count352
-\nofMParguments=\count353
+\scratchcounter=\count363
+\scratchdimen=\dimen316
+\scratchbox=\box87
+\nofMPsegments=\count364
+\nofMParguments=\count365
 \everyMPshowfont=\toks54
-\MPscratchCnt=\count354
-\MPscratchDim=\dimen311
-\MPnumerator=\count355
-\makeMPintoPDFobject=\count356
+\MPscratchCnt=\count366
+\MPscratchDim=\dimen317
+\MPnumerator=\count367
+\makeMPintoPDFobject=\count368
 \everyMPtoPDFconversion=\toks55
 ) (/usr/local/texlive/2024/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
@@ -625,117 +693,65 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 48
  (/usr/local/texlive/2024/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
 ))
-LaTeX Font Info:    Trying to load font information for U+msa on input line 49.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 51.
  (/usr/local/texlive/2024/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 49.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 51.
  (/usr/local/texlive/2024/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-
-[1
-
-{/usr/local/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}]
-<pictures/moore.png, id=20, 371.3875pt x 363.3575pt>
+<pictures/moore.png, id=4, 371.3875pt x 363.3575pt>
 File: pictures/moore.png Graphic file (type png)
 <use pictures/moore.png>
 Package pdftex.def Info: pictures/moore.png  used on input line 75.
 (pdftex.def)             Requested size: 98.28607pt x 96.16174pt.
 
 
-[2 <./pictures/moore.png>]
+[1
+
+{/usr/local/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}]
 \pydata@fh@_FAD58DE7366495DB4650CFEFAC2FCD61.data.minted=\write5
 \openout5 = `_FAD58DE7366495DB4650CFEFAC2FCD61.data.minted'.
 
-runsystem(latexminted config  --timestamp 20250510134340 FAD58DE7366495DB4650CFEFAC2FCD61)...executed.
+runsystem(latexminted config  --timestamp 20250524153456 FAD58DE7366495DB4650CFEFAC2FCD61)...executed.
 
  (./_FAD58DE7366495DB4650CFEFAC2FCD61.config.minted)
-runsystem(latexminted cleanconfig  --timestamp 20250510134340 FAD58DE7366495DB4650CFEFAC2FCD61)...executed.
+runsystem(latexminted cleanconfig  --timestamp 20250524153456 FAD58DE7366495DB4650CFEFAC2FCD61)...executed.
 
  (./_minted/default.style.minted) (./_minted/A2AA1011A39C4B6FB89ADA4987EF5C53.highlight.minted) (./_minted/E061199B9D5F4F48540963A3977F3F99.highlight.minted) (./_minted/A2AA1011A39C4B6FB89ADA4987EF5C53.highlight.minted) (./_minted/A2AA1011A39C4B6FB89ADA4987EF5C53.highlight.minted) (./_minted/E061199B9D5F4F48540963A3977F3F99.highlight.minted) (./_minted/E061199B9D5F4F48540963A3977F3F99.highlight.minted)
-<pictures/model1/land_200.png, id=26, 513.92pt x 513.92pt>
-File: pictures/model1/land_200.png Graphic file (type png)
-<use pictures/model1/land_200.png>
-Package pdftex.def Info: pictures/model1/land_200.png  used on input line 172.
-(pdftex.def)             Requested size: 137.60551pt x 137.6075pt.
-<pictures/model2/land_200_nowind.png, id=27, 513.92pt x 513.92pt>
-File: pictures/model2/land_200_nowind.png Graphic file (type png)
-<use pictures/model2/land_200_nowind.png>
-Package pdftex.def Info: pictures/model2/land_200_nowind.png  used on input line 178.
-(pdftex.def)             Requested size: 137.60551pt x 137.6075pt.
 
-
-[3]
-<pictures/model2/land_200_wind_notdense.png, id=35, 513.92pt x 513.92pt>
+[2 <./pictures/moore.png>]
+<pictures/model2/land_200_wind_notdense.png, id=29, 513.92pt x 513.92pt>
 File: pictures/model2/land_200_wind_notdense.png Graphic file (type png)
 <use pictures/model2/land_200_wind_notdense.png>
-Package pdftex.def Info: pictures/model2/land_200_wind_notdense.png  used on input line 191.
-(pdftex.def)             Requested size: 137.60551pt x 137.6075pt.
-<pictures/model2/land_200_wind_dense.png, id=36, 513.92pt x 513.92pt>
-File: pictures/model2/land_200_wind_dense.png Graphic file (type png)
-<use pictures/model2/land_200_wind_dense.png>
-Package pdftex.def Info: pictures/model2/land_200_wind_dense.png  used on input line 196.
-(pdftex.def)             Requested size: 137.60551pt x 137.6075pt.
+Package pdftex.def Info: pictures/model2/land_200_wind_notdense.png  used on input line 172.
+(pdftex.def)             Requested size: 147.43285pt x 147.43326pt.
+ (./_minted/1257D7F09538C252103B413CB42D5996.highlight.minted) (./_minted/E780EFA9532F86E96A515A15EE2517DB.highlight.minted)
 
+[3 <./pictures/model2/land_200_wind_notdense.png (PNG copy)>] (./_minted/1257D7F09538C252103B413CB42D5996.highlight.minted) (./_minted/1257D7F09538C252103B413CB42D5996.highlight.minted)
 
-[4 <./pictures/model1/land_200.png (PNG copy)> <./pictures/model2/land_200_nowind.png (PNG copy)> <./pictures/model2/land_200_wind_notdense.png (PNG copy)> <./pictures/model2/land_200_wind_dense.png (PNG copy)>]
+[4] (./_minted/1257D7F09538C252103B413CB42D5996.highlight.minted) (./_minted/6B63A436A2D72F3EE24A46194D2E0FF7.highlight.minted) (./_minted/1257D7F09538C252103B413CB42D5996.highlight.minted)
 
-[5]
-<pictures/trans/no_treach.png, id=43, 513.92pt x 513.92pt>
-File: pictures/trans/no_treach.png Graphic file (type png)
-<use pictures/trans/no_treach.png>
-Package pdftex.def Info: pictures/trans/no_treach.png  used on input line 247.
-(pdftex.def)             Requested size: 137.60551pt x 137.6075pt.
-<pictures/trans/treach.png, id=44, 513.92pt x 513.92pt>
-File: pictures/trans/treach.png Graphic file (type png)
-<use pictures/trans/treach.png>
-Package pdftex.def Info: pictures/trans/treach.png  used on input line 253.
-(pdftex.def)             Requested size: 137.60551pt x 137.6075pt.
-<pictures/trans/treach_15.png, id=45, 513.92pt x 513.92pt>
-File: pictures/trans/treach_15.png Graphic file (type png)
-<use pictures/trans/treach_15.png>
-Package pdftex.def Info: pictures/trans/treach_15.png  used on input line 268.
-(pdftex.def)             Requested size: 137.60551pt x 137.6075pt.
-<pictures/trans/treach_30.png, id=46, 513.92pt x 513.92pt>
-File: pictures/trans/treach_30.png Graphic file (type png)
-<use pictures/trans/treach_30.png>
-Package pdftex.def Info: pictures/trans/treach_30.png  used on input line 273.
-(pdftex.def)             Requested size: 137.60551pt x 137.6075pt.
-File: pictures/trans/treach.png Graphic file (type png)
-<use pictures/trans/treach.png>
-Package pdftex.def Info: pictures/trans/treach.png  used on input line 290.
-(pdftex.def)             Requested size: 137.60551pt x 137.6075pt.
-<pictures/trans/little_treach.png, id=47, 513.92pt x 513.92pt>
-File: pictures/trans/little_treach.png Graphic file (type png)
-<use pictures/trans/little_treach.png>
-Package pdftex.def Info: pictures/trans/little_treach.png  used on input line 295.
-(pdftex.def)             Requested size: 137.60551pt x 137.6075pt.
-
-
-[6 <./pictures/trans/no_treach.png (PNG copy)> <./pictures/trans/treach.png (PNG copy)>]
-
-[7 <./pictures/trans/treach_15.png (PNG copy)> <./pictures/trans/treach_30.png (PNG copy)> <./pictures/trans/little_treach.png (PNG copy)>] (./_minted/F3F178CFB15757FDD49C976279051D8C.highlight.minted) (./_minted/2A8E374FA366D7A199136D21F4E31AFD.highlight.minted) (./_minted/2A8E374FA366D7A199136D21F4E31AFD.highlight.minted) (./_minted/E2F95AF71CB894F5D4DD1E752D8BCB64.highlight.minted) (./_minted/2059A1F1429673373391966958A43189.highlight.minted) (./_minted/361E9507BEA16B46AAAB5BBA9ECBD3D5.highlight.minted) (./_minted/4747E3B46746B3DB675B6753BEE4A789.highlight.minted) (./_minted/6F53D80867994EF9637B75FA8330F79D.highlight.minted) (./_minted/F2E89B22D76D692DF0E5CA844A06BAEB.highlight.minted) (./_minted/8A0F1210BE3ED9391A99E24F8FA924E8.highlight.minted) (./_minted/4747E3B46746B3DB675B6753BEE4A789.highlight.minted) (./_minted/2A8E374FA366D7A199136D21F4E31AFD.highlight.minted)
-
-[8] (./main.aux)
+[5] (./main.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 1
 L3 programming layer <2024-12-09>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 21366 strings out of 473254
- 456150 string characters out of 5717963
- 930151 words of memory out of 5000000
- 44165 multiletter control sequences out of 15000+600000
- 573149 words of font info for 76 fonts, out of 8000000 for 9000
+ 23010 strings out of 473254
+ 480956 string characters out of 5717963
+ 972427 words of memory out of 5000000
+ 45800 multiletter control sequences out of 15000+600000
+ 574225 words of font info for 78 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 85i,12n,93p,622b,992s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfbx1728.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfcc1200.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfrm1440.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfrm2074.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfti1200.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
-Output written on main.pdf (8 pages, 312761 bytes).
+ 85i,12n,93p,575b,992s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfbx1728.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfcc1200.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfrm1440.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfrm2074.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfti1200.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
+Output written on main.pdf (5 pages, 276867 bytes).
 PDF statistics:
- 130 PDF objects out of 1000 (max. 8388607)
- 75 compressed objects within 1 object stream
+ 121 PDF objects out of 1000 (max. 8388607)
+ 73 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 63 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 23 words of extra memory for PDF output out of 10000 (max. 10000000)
 

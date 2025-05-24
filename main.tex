@@ -14,6 +14,8 @@
 \usepackage{array}
 \usepackage{lettrine}
 \usepackage{tikz}
+\usepackage[ruled,linesnumbered,french,onelanguage]{algorithm2e}
+\usepackage{algpseudocode}
 \usetikzlibrary{angles,quotes}
 
 \newcolumntype{C}[1]{>{\centering\arraybackslash}m{#1}}
@@ -56,8 +58,6 @@ Dans ce cadre, les modélisations informatiques des feux de forêt permettent de
 
 \section{Automates cellulaires}
 
-\subsection{Généralités}
-
 Pour réaliser nos modélisations, nous allons utiliser des automates cellulaires. Ces outils permettent de représenter des systèmes avec des interactions locales entre les éléments qui les constituent. Les automates cellulaires ont notamment été popularisés avec \textit{Le~Jeu~de~la~Vie} de \textit{Conway}.
 
 \definition{Un automate cellulaire est la donnée d'un triplet $(Q, M, f)$ avec :\begin{itemize}
@@ -79,22 +79,22 @@ La définition de la fonction de transition dépend donc du type de voisinage co
 
 Il serait possible dans une optique d'avoir des modèles encore plus précis d'utiliser des voisinages de \textit{Moore} étendus, avec plusieurs rayons de voisins. Cependant par souci de simplicité nous nous sommes restreints à un rayon.
 
-\subsection{Représentation d'un forêt}
+% \subsection{Représentation d'un forêt}
 
-Afin de représenter une forêt avec un automate cellulaire, nous avons défini une liste d'états que les cellules pouvaient prendre.
+% Afin de représenter une forêt avec un automate cellulaire, nous avons défini une liste d'états que les cellules pouvaient prendre.
 
-\definition{Les états possibles sont :
-\begin{itemize}
-    \item Arbres
-    \item Arbres denses
-    \item Champs
-    \item Feu
-    \item Case brûlée\textsuperscript{*}
-    \item Eau\textsuperscript{*}
-\end{itemize}
-A noter que les cases $(*)$ ne peuvent brûler.}
+% \definition{Les états possibles sont :
+% \begin{itemize}
+%     \item Arbres
+%     \item Arbres denses
+%     \item Champs
+%     \item Feu
+%     \item Case brûlée\textsuperscript{*}
+%     \item Eau\textsuperscript{*}
+% \end{itemize}
+% A noter que les cases $(*)$ ne peuvent brûler.}
 
-Nous avons choisi de travailler avec une matrice de taille $256 \times 256$ pour des raisons techniques : au-delà le temps de calcul devenait trop long, et l'ajout de lignes/colonnes ne représentait pas un intérêt suffisant au regard du temps de calcul que cela impliquait.
+% Nous avons choisi de travailler avec une matrice de taille $256 \times 256$ pour des raisons techniques : au-delà le temps de calcul devenait trop long, et l'ajout de lignes/colonnes ne représentait pas un intérêt suffisant au regard du temps de calcul que cela impliquait.
 
 \section{Modèle d'Alexandridis}
 
@@ -163,171 +163,147 @@ On a $\theta_1 > \theta_2$ et une vitesse plus élevée dans la seconde situatio
 
 \subsection{Résultats}
 
-Comparons d'abord les résultats de la modélisation naïve avec ceux du modèle d'\textit{Alexandridis} :
+Voici un résultat de modélisation de feu, avec un vent de $15 m/s$ orienté vers l'est :
 
 \begin{figure}[!ht]
     \centering
-    \begin{minipage}{0.35\textwidth}
+    \begin{minipage}{0.50\textwidth}
       \centering
-      \includegraphics[width=.8\linewidth]{pictures/model1/land_200.png}
-      \caption{Solution naïve}\label{Fig:Data1}
-    \end{minipage}
-    \hfil
-    \begin{minipage}{0.35\textwidth}
-      \centering
-      \includegraphics[width=.8\linewidth]{pictures/model2/land_200_nowind.png}
-      \caption{\textit{Alexandridis}}\label{Fig:Data2}
-    \end{minipage}
+      \includegraphics[width=.6\linewidth]{pictures/model2/land_200_wind_notdense.png}
+      \caption{Simulation Alexandridis}\label{Fig:Data3}
+    \end{minipage}\hfil
  \end{figure}
 
-On observe que la solution naïve présente une propagation plus lente et un front de feu plus étendu que le modèle d'\textit{Alexandridis}.
+\section{Hashlife}
 
-Comparons maintenant deux modélisations du modèle d'Alexandridis avec des densités de végétation différentes, sous un vent de $15 m/s$ orienté vers l'est :
+Afin de réaliser des modélisations plus conséquentes (notamment en augmentant la taille de la grille), il faut trouver une manière de réduire le nombre de calculs. C'est l'objectif de l'algorithme de mémoïsation \mintinline{latex}|Hashlife|, notamment utilisé dans le logiciel \mintinline{latex}|Golly|\footnote{https://golly.sourceforge.io/} pour les simulations du \textit{Jeu de la Vie} de \textit{Conway}.
 
-\begin{figure}[!ht]
-    \centering
-    \begin{minipage}{0.35\textwidth}
-      \centering
-      \includegraphics[width=.8\linewidth]{pictures/model2/land_200_wind_notdense.png}
-      \caption{Végétation normale}\label{Fig:Data3}
-    \end{minipage}\hfil
-    \begin{minipage}{0.35\textwidth}
-      \centering
-      \includegraphics[width=.8\linewidth]{pictures/model2/land_200_wind_dense.png}
-      \caption{Végétation dense}\label{Fig:Data4}
-    \end{minipage}
- \end{figure}
+Au lieu de calculer chaque cellule indépendamment, l'algorithme considère des groupements de cellules, dits \textit{macro-cellules}, de taille $2^n \times 2^n$, que l'on peut redécouper en 4 quadrants de taille $2^{n-1} \times 2^{n-1}$ (partie en bleu sur la figure).
 
-On remarque principalement deux effets importants sur les deux modélisations.
-
-Premièrement, la progression du feu dans une végétation normale est plus lente (ce qui est cohérent avec l'observation empirique), et le front de feu est donc moins étendu. La surface brûlée dans le cas de la densité normale présente également des zones non brûlées, contrairement à celle de la densité élevée qui est plus uniforme. Ce phénomène s'explique par une probabilité $p_b$ plus élevée pour une densité plus forte.
-
-Deuxièmement, dans les deux modélisations, l'impact du vent est clairement visible : le front de feu s'est propagé selon un cône poussé par le vent.
-
-\subsection{Considérations algorithmiques}
-
-Cette sous-partie a pour objectif de présenter l'implémentation de la modélisation réalisée et de justifier le choix d'une grille de taille $256 \times 256$.
-
-Voici les complexités temporelles des différentes fonctions créées :
-
-\begin{itemize}
-    \item Calcul de $p_b$ : $O(1)$
-    \item Calcul du passage de l'état à l'instant $t$ à l'état à l'instant $t+1$ : $O(n^2)$, où $n$ est la dimension de la grille. Cette estimation repose sur environ $100$ opérations élémentaires (lectures, comparaisons, affectations, calculs arithmétiques, etc.) pour chaque cellule.
-    \item Affichage de l'état à l'instant $t$ : $O(m^2 \times n^2)$, où $n$ est la dimension de la grille et $m$ est la taille en pixels d'une cellule représentée à l'écran.
-\end{itemize}
-
-Ainsi, pour $N$ itérations, la complexité totale est de $O(m^2 \times n^2 \times N)$. Numériquement, avec $n$ = 256, $m$ = 2 et $N$ = 200 on trouve $\approx 10^5$, et donc on en déduit grossièrement $\approx 10^7$ opérations élémentaires.
-
-En considérant un temps d'exécution moyen par opération élémentaire, cela correspond grossièrement à un temps de calcul d'environ 5 secondes.
-
-On comprend donc pourquoi augmenter la valeur de $n$ (toutes choses égales par ailleurs) ou de $N$ conduirait à des simulations plus longues.
-
-\section{Transformations}
-
-Puisque nous disposons maintenant d'un modèle pour réaliser des simulations, nous allons nous intéresser aux transformations réalisables, notamment ici, dans le cadre de cette étude, aux tranchées et chemins.
-
-\subsection{Explications}
-
-Nous allons donc considérer l'ajout de tranchées ou de chemins forestiers, des transformations légères qui permettent de limiter l'impact des feux sans dénaturer les forêts.
-
-\proposition{On ajoute un nouvel état Chemins/Tranchées avec $p_{veg} = -0.55$ et $p_{den} = 0$ à notre modèle.}
-
-\subsection{Résultats}
-
-L'objectif est maintenant d'observer l'impact des tranchées avec différentes configurations de vent et de largeur de tranchées.
-
-\subsubsection{Tranchées/Sans tranchées}
-
-La première comparaison intéressante est d'étudier la différence de propagation du feu avec et sans tranchées.
+On appelle \textit{résultat} la macro-cellule centrale de taille $2^{n-1} \times 2^{n-1}$ (partie en rouge sur la figure).
 
 \begin{figure}[!ht]
     \centering
-    \begin{minipage}{0.35\textwidth}
-      \centering
-      \includegraphics[width=.8\linewidth]{pictures/trans/no_treach.png}
-      \caption{Sans tranchées}\label{Fig:Data5}
-    \end{minipage}
-    \hfil
-    \begin{minipage}{0.35\textwidth}
-      \centering
-      \includegraphics[width=.8\linewidth]{pictures/trans/treach.png}
-      \caption{Avec tranchées}\label{Fig:Data6}
-    \end{minipage}
+        \begin{tikzpicture}[> = stealth]
+            \draw[step=0.25cm,color=gray] (-1,-1) grid (1,1);
+            \draw[fill=blue,fill opacity=0.6,draw=black] (-0.75,-0.75) rectangle ++(1.5,1.5);
+            \draw[step=1cm,color=black] (-1,-1) grid (1,1);
+            \draw[step=0.25cm,color=gray] (2,-1) grid (4,1);
+            \draw[step=1cm,color=black] (2,-1) grid (4,1);
+            \draw[fill=red,fill opacity=0.6,draw=black] (2.5,-0.5) rectangle ++(1,1);
+        \end{tikzpicture}
+    \caption{Une macro-cellule de taille $2^{3} \times 2^{3}$}
 \end{figure}
 
-En comparant la\fig{8}et la\fig{9}on constate que la présence de tranchées permet de bloquer la propagation du feu. Il est important de noter que ce résultat est observé pour un nombre d'itérations limité (ici $200$), et qu'une simulation plus longue pourrait montrer une propagation au-delà des tranchées.
+Ce découpage en macro-cellule permet de calculer le résultat sans considérer aucune information extérieure à la macro-cellule pendant $2^{n-2}$ unités de temps. Ce calcul est fait récursivement selon deux cas :
 
-\subsubsection{Vent faible/Vent fort}
+Soit $n = 2$, le résultat est composé d'uniquement $4$ cellules, dans ce cas on le calcule directement en appliquant les règles de notre automate cellulaire.
 
-Dans un deuxième temps, comparons deux situations avec un vent orienté dans la même direction mais de vitesse différente.
+Sinon $n > 2$, on a donc $4$ quadrants de taille $2^{n-1} \times 2^{n-1}$ pour lesquels on calcule récursivement leur résultat (ici en bleu). Ensuite il faut calculer les $5$ macro-cellules de taille $2^{n-2} \times 2^{n-2}$ (en rouge) en considérant les macro-cellules de taille $2^{n-1} \times 2^{n-1}$ associées (exemple en vert).
 
-\begin{figure}[!ht]
-    \centering
-    \begin{minipage}{0.35\textwidth}
-      \centering
-      \includegraphics[width=.8\linewidth]{pictures/trans/treach_15.png}
-      \caption{$15$ m/s de vent}\label{Fig:Data7}
-    \end{minipage}\hfil
-    \begin{minipage}{0.35\textwidth}
-      \centering
-      \includegraphics[width=.8\linewidth]{pictures/trans/treach_30.png}
-      \caption{$30$ m/s de vent}\label{Fig:Data8}
-    \end{minipage}
-\end{figure}
-
-En comparant la\fig{10}et la\fig{11}on observe qu'un vent plus fort diminue l'efficacité des tranchées ou chemins. Ce résultat est empiriquement logique : un vent plus intense permet au feu de se propager plus rapidement et donc de franchir plus facilement l'obstacle.
-
-Il est tout de même intéressant de mentionner que, même lorsque le feu parvient à traverser la tranchée, moins de 25\% de sa surface (dans la zone impactée par le feu) est brûlée à la fin de la simulation.
-
-\subsubsection{Tranchée mince/Tranchée large}
-
-Dans un dernier temps, comparons deux largeurs de tranchée.
+Enfin après ces précalculs effectués, on peut calculer les quatre macro-cellules de taille $2^{n-2}$ (en jaune) afin d'obtenir le résultat que l'on recherche.
 
 \begin{figure}[!ht]
     \centering
-    \begin{minipage}{0.35\textwidth}
-      \centering
-      \includegraphics[width=.8\linewidth]{pictures/trans/treach.png}
-      \caption{Tranchée de $8$m}\label{Fig:Data9}
-    \end{minipage}\hfil
-    \begin{minipage}{0.35\textwidth}
-      \centering
-      \includegraphics[width=.8\linewidth]{pictures/trans/little_treach.png}
-      \caption{Tranchée de $4$m}\label{Fig:Data10}
-    \end{minipage}
+        \begin{tikzpicture}[> = stealth]
+            \draw[fill=none,draw=black] (-1,-1) rectangle ++(2,2);
+            \draw[step=1cm,color=black] (-1,-1) grid (1,1);
+            \draw[fill=blue,fill opacity=0.6,draw=black] (-0.75,-0.75) rectangle ++(0.5,0.5);
+            \draw[fill=blue,fill opacity=0.6,draw=black] (0.25,-0.75) rectangle ++(0.5,0.5);
+            \draw[fill=blue,fill opacity=0.6,draw=black] (-0.75,0.25) rectangle ++(0.5,0.5);
+            \draw[fill=blue,fill opacity=0.6,draw=black] (0.25,0.25) rectangle ++(0.5,0.5);
+            \draw[step=1cm,color=black] (2,-1) grid (4,1);
+            \draw[fill=gray,fill opacity=0.6,draw=black] (2.25,-0.75) rectangle ++(0.5,0.5);
+            \draw[fill=gray,fill opacity=0.6,draw=black] (3.25,-0.75) rectangle ++(0.5,0.5);
+            \draw[fill=gray,fill opacity=0.6,draw=black] (2.25,0.25) rectangle ++(0.5,0.5);
+            \draw[fill=gray,fill opacity=0.6,draw=black] (3.25,0.25) rectangle ++(0.5,0.5);
+            \draw[fill=red,fill opacity=0.6,draw=black] (2.25,-0.25) rectangle ++(0.5,0.5);
+            \draw[fill=red,fill opacity=0.6,draw=black] (2.75,-0.75) rectangle ++(0.5,0.5);
+            \draw[fill=red,fill opacity=0.6,draw=black] (2.75,0.25) rectangle ++(0.5,0.5);
+            \draw[fill=red,fill opacity=0.6,draw=black] (3.25,-0.25) rectangle ++(0.5,0.5);
+            \draw[fill=red,fill opacity=0.6,draw=black] (2.75,-0.25) rectangle ++(0.5,0.5);
+            \draw[step=1cm,color=black] (5,-1) grid (7,1);
+            \draw[fill=green,fill opacity=0.6,draw=black] (5,-0.5) rectangle ++(1,1);
+            \draw[fill=red,fill opacity=0.6,draw=black] (5.25,-0.25) rectangle ++(0.5,0.5);
+            \draw[step=1cm,color=black] (8,-1) grid (10,1);
+            \draw[fill=yellow,fill opacity=0.6,draw=black] (8.5,-0.5) rectangle ++(0.5,0.5);
+            \draw[fill=yellow,fill opacity=0.6,draw=black] (9,-0.5) rectangle ++(0.5,0.5);
+            \draw[fill=yellow,fill opacity=0.6,draw=black] (8.5,0.0) rectangle ++(0.5,0.5);
+            \draw[fill=yellow,fill opacity=0.6,draw=black] (9,0.0) rectangle ++(0.5,0.5);
+        \end{tikzpicture}
+    \caption{Calcul dans le cas $n > 2$}
 \end{figure}
 
-En comparant la\fig{12}et la\fig{13}on constate qu'une tranchée plus large est plus efficace pour limiter la propagation du feu. Entre ces deux simulations, la grande tranchée verticale a été réduite horizontalement, et l'impact de ce changement est clairement visible.
+Si dans le cas $n=2$ on fait le même nombre d'opérations que dans la simulation naïve, le cas $n>2$ réalise une réelle économie de calcul.
 
-De plus, on observe sur la\fig{13}que le front de feu est toujours présent, ce qui suggère qu'une simulation plus longue entraînerait la combustion d'une zone encore plus étendue.
+Mais \mintinline{latex}|Hashlife| n'est pas uniquement une réduction du nombre de calculs dans les itérations. En effet l'algorithme exploite le fait que les automates cellulaires présentent des répétitions de motifs durant l'exécution, notamment avec les \textit{gliders} dans \textit{Le~Jeu~de~la~Vie} volant jusqu'aux bordures (infinies) de la grille :
 
-\subsection{Possibles améliorations}
+\begin{figure}[!ht]
+    \centering
+        \begin{tikzpicture}[> = stealth]
+            \draw[step=0.4cm,color=gray] (0,0) grid (2,2);
+            \draw[fill=black,draw=black] (0.4,0.8) rectangle ++(0.4,0.4);
+            \draw[fill=black,draw=black] (0.8,0.4) rectangle ++(0.4,0.4);
+            \draw[fill=black,draw=black] (1.2,0.4) rectangle ++(0.4,1.2);
+            \draw[step=2cm,color=black] (0,0) grid (2,2);
+        \end{tikzpicture}
+    \caption{Un \textit{glider}}
+\end{figure}
 
-Bien que nous ayons obtenu des résultats intéressants avec ce modèle intermédiaire, qui prend en compte le type et la densité de la végétation ainsi que le vent, il est possible d'aller plus loin dans les simulations.
+C'est pourquoi \mintinline{latex}|Hashlife| réalise aussi une mémoïsation des résultats de chaque quadrant à l'aide d'une table de hashage, d'où le nom de l'algorithme. Celà permet de réutiliser au maximum les calculs et d'éviter de recalculer les situations récurrentes.
 
-Il serait donc envisageable d'intégrer d'autres paramètres importants tels que l'élévation, l'humidité ou la température.
+Si \mintinline{latex}|Hashlife| permet de réduire drastiquement le temps de calcul pour des grandes grilles et de s'affranchir de bornes de ces dernières en exploitant les motifs qui se répètent, il existe toujours des cas dégénérés où l'algorithme a une complexité similaire à celui naïf si les motifs ne se répètent jamais\footnote{L'algorithme \mintinline{latex}|Quicklife| permet de résoudre ce problème}.
 
-De plus, on pourrait considérer d'autres transformations pour la gestion des incendies. Par exemple, la réduction de la densité de végétation, dont la\fig{7}a permis d'observer l'impact positif sur la limitation de la propagation. Il serait également pertinent d'affiner la modélisation de l'interaction avec les cours d'eau et les lacs, qui sont actuellement considérés comme des obstacles infranchissables, alors qu'ils peuvent influencer la progression du feu de manière plus complexe.
+\section{Conclusion}
 
-\section{Annexe}
+Les automates cellulaires permettent de simuler de nombreux systèmes avec des interactions tels que les feux de forêt. Cependant pour réussir à avoir des simulations d'une taille convaincante (et dans un temps raisonnable) il faut implémenter des algorithmes plus poussés tels que \mintinline{latex}|Hashlife|.
 
-\subsection{Choix d'implémentation}
+% \subsection{Pseudo code}
 
-Pour implémenter les différents modèles, nous avons choisi le langage \mintinline{latex}{C99}. Ce choix a été principalement motivé par deux aspects :
+% Une implémentation en pseudo-code de \mintinline{latex}|Hashlife| est la suivante :
 
-\begin{itemize}
-    \item Le bas niveau du \mintinline{latex}{C} offre un gain significatif en temps d'exécution par rapport à d'autres langages. Ceci est particulièrement avantageux compte tenu du volume important de calculs nécessaires pour simuler l'évolution des états dans nos grilles.
-    \item Le \mintinline{latex}{C}, étant plus largement répandu que l'\mintinline{latex}{OCaml}, bénéficie d'un écosystème de bibliothèques externes plus vaste et plus mature.
-\end{itemize}
+% \begin{figure}[!ht]
+%     \begin{minipage}{0.90\textwidth}
+%       \centering
+% \begin{algorithm}[H]
+% \SetKwFunction{Hashlife}{Hashlife}
+% \SetKwData{hashtable}{hashtable}
+% \SetKwData{cellule}{cellule}
+% \SetKwData{n}{n}
+% \SetKwData{nouvellecellule}{nouvelle\_cellule}
+% \SetKwData{enfantun}{enfant1}
+% \SetKwData{enfantdeux}{enfant2}
+% \SetKwData{enfanttrois}{enfant3}
+% \SetKwData{enfantquatre}{enfant4}
+% \SetKwProg{Fn}{Fonction}{:}{}
 
-Nous avons utilisé les bibliothèques non standard suivantes :
+% \DontPrintSemicolon % Suppress semicolons at the end of lines
 
-\begin{itemize}
-    \item \mintinline{latex}{SDL2} : Pour la création d'une interface graphique permettant de visualiser l'évolution des simulations en temps réel.
-    \item \mintinline{latex}{cJSON} : Pour la manipulation de fichiers \mintinline{latex}{JSON}, format utilisé pour représenter et importer les configurations initiales des grilles.
-    \item \mintinline{latex}{png} : Pour la création et la manipulation de fichiers \mintinline{latex}{PNG}, afin d'exporter les résultats des simulations sous forme d'images.
-\end{itemize}
+% \caption{Hashlife}\label{alg:cap}
+% \SetAlgoLined
+% \Fn{\Hashlife{\cellule}}{
+%     \If{\KwSty{hash}(\cellule) \KwSty{dans} \hashtable}{
+%         \Return \hashtable[\KwSty{hash}(\cellule)]\;
+%     }
+%     \BlankLine
+%     \nouvellecellule $\gets$ Cellule vide\;
+%     \If{\cellule.\n = 2}{
+%         \nouvellecellule $\gets$ Calcul du résultat $2 \times 2$\;
+%     }
+%     \Else{
+%         \nouvellecellule.\enfantun $\gets$ \Hashlife{\cellule.\enfantun}\;
+%         \nouvellecellule.\enfantdeux $\gets$ \Hashlife{\cellule.\enfantdeux}\;
+%         \nouvellecellule.\enfanttrois $\gets$ \Hashlife{\cellule.\enfanttrois}\;
+%         \nouvellecellule.\enfantquatre $\gets$ \Hashlife{\cellule.\enfantquatre}\;
+%     }
+%     \BlankLine
+%     \hashtable[\KwSty{hash}(\cellule)] $\gets$ \nouvellecellule\;
+%     \Return \nouvellecellule\;
+% }
+% \end{algorithm}
+%     \end{minipage}
+% \end{figure}
 
-Afin de faciliter la création et la configuration des grilles initiales, nous avons développé un site web interactif en \mintinline{latex}|React.JS|. Cette interface web permet de concevoir visuellement les forêts initiales avant de les exporter au format \mintinline{latex}{JSON} pour être utilisées par notre simulateur en \mintinline{latex}{C}.
+% \section{Bibliographie}
 
 \end{document}
