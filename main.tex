@@ -178,6 +178,8 @@ Voici un résultat de modélisation de feu, avec un vent de $15 m/s$ orienté ve
 
 Afin de réaliser des modélisations plus conséquentes (notamment en augmentant la taille de la grille), il faut trouver une manière de réduire le nombre de calculs. C'est l'objectif de l'algorithme de mémoïsation \mintinline{latex}|Hashlife|, notamment utilisé dans le logiciel \mintinline{latex}|Golly|\footnote{https://golly.sourceforge.io/} pour les simulations du \textit{Jeu de la Vie} de \textit{Conway}.
 
+\subsection{Principe de Hashlife}
+
 Au lieu de calculer chaque cellule indépendamment, l'algorithme considère des groupements de cellules, dits \textit{macro-cellules}, de taille $2^n \times 2^n$, que l'on peut redécouper en 4 quadrants de taille $2^{n-1} \times 2^{n-1}$ (partie en bleu sur la figure).
 
 On appelle \textit{résultat} la macro-cellule centrale de taille $2^{n-1} \times 2^{n-1}$ (partie en rouge sur la figure).
@@ -186,7 +188,10 @@ On appelle \textit{résultat} la macro-cellule centrale de taille $2^{n-1} \time
     \centering
         \begin{tikzpicture}[> = stealth]
             \draw[step=0.25cm,color=gray] (-1,-1) grid (1,1);
-            \draw[fill=blue,fill opacity=0.6,draw=black] (-0.75,-0.75) rectangle ++(1.5,1.5);
+            \draw[fill=blue,fill opacity=0.7,draw=black] (-1,-1) rectangle ++(1,1);
+            \draw[fill=blue,fill opacity=0.5,draw=black] (-1,0) rectangle ++(1,1);
+            \draw[fill=blue,fill opacity=0.7,draw=black] (0,0) rectangle ++(1,1);
+            \draw[fill=blue,fill opacity=0.5,draw=black] (0,-1) rectangle ++(1,1);
             \draw[step=1cm,color=black] (-1,-1) grid (1,1);
             \draw[step=0.25cm,color=gray] (2,-1) grid (4,1);
             \draw[step=1cm,color=black] (2,-1) grid (4,1);
@@ -195,13 +200,16 @@ On appelle \textit{résultat} la macro-cellule centrale de taille $2^{n-1} \time
     \caption{Une macro-cellule de taille $2^{3} \times 2^{3}$}
 \end{figure}
 
-Ce découpage en macro-cellule permet de calculer le résultat sans considérer aucune information extérieure à la macro-cellule pendant $2^{n-2}$ unités de temps. Ce calcul est fait récursivement selon deux cas :
+Ce découpage en macro-cellules permet de calculer le résultat sans considérer aucune information extérieure à la macro-cellule pendant $2^{n-2}$ unités de temps. Ce calcul est effectué récursivement selon deux cas :
 
-Soit $n = 2$, le résultat est composé d'uniquement $4$ cellules, dans ce cas on le calcule directement en appliquant les règles de notre automate cellulaire.
+\begin{itemize}
+    \item Cas de base ($n=2$) : Le résultat est composé de seulement 4 cellules. Dans ce cas, nous le calculons directement en appliquant les règles de notre automate cellulaire. \vspace{10px}
 
-Sinon $n > 2$, on a donc $4$ quadrants de taille $2^{n-1} \times 2^{n-1}$ pour lesquels on calcule récursivement leur résultat (ici en bleu). Ensuite il faut calculer les $5$ macro-cellules de taille $2^{n-2} \times 2^{n-2}$ (en rouge) en considérant les macro-cellules de taille $2^{n-1} \times 2^{n-1}$ associées (exemple en vert).
+    \item Cas récursif ($n > 2$) : Nous avons 4 quadrants de taille $2^{n-1} \times 2^{n-1}$ pour lesquels nous calculons récursivement leur résultat (illustré en bleu). Ensuite, il est nécessaire de calculer les 5 macro-cellules de taille $2^{n-2} \times 2^{n-2}$ (en rouge) en tenant compte des macro-cellules de taille $2^{n-1} \times 2^{n-1}$ associées (exemple en vert).
 
-Enfin après ces précalculs effectués, on peut calculer les quatre macro-cellules de taille $2^{n-2}$ (en jaune) afin d'obtenir le résultat que l'on recherche.
+    Enfin, après ces précalculs, les quatre macro-cellules de taille $2^{n-2}$ (en jaune) peuvent être calculées pour obtenir le résultat recherché.
+\end{itemize}
+ \vspace{10px}
 
 \begin{figure}[!ht]
     \centering
@@ -234,9 +242,11 @@ Enfin après ces précalculs effectués, on peut calculer les quatre macro-cellu
     \caption{Calcul dans le cas $n > 2$}
 \end{figure}
 
-Si dans le cas $n=2$ on fait le même nombre d'opérations que dans la simulation naïve, le cas $n>2$ réalise une réelle économie de calcul.
+Si, dans le cas $n=2$, le nombre d'opérations est similaire à celui de la simulation naïve, le cas $n>2$ permet une réelle économie de calcul.
 
-Mais \mintinline{latex}|Hashlife| n'est pas uniquement une réduction du nombre de calculs dans les itérations. En effet l'algorithme exploite le fait que les automates cellulaires présentent des répétitions de motifs durant l'exécution, notamment avec les \textit{gliders} dans \textit{Le~Jeu~de~la~Vie} volant jusqu'aux bordures (infinies) de la grille :
+\subsection{Mémoïsation}
+
+Cependant, \mintinline{latex}|Hashlife| ne se contente pas de réduire le nombre de calculs par itération. L'algorithme tire parti du fait que les automates cellulaires présentent des répétitions de motifs durant leur exécution, notamment avec les \textit{gliders} dans le \textit{Jeu de la Vie} qui se déplacent jusqu'aux bordures (infinies) de la grille en répétant 4 fois les mêmes motifs :
 
 \begin{figure}[!ht]
     \centering
@@ -246,17 +256,45 @@ Mais \mintinline{latex}|Hashlife| n'est pas uniquement une réduction du nombre 
             \draw[fill=black,draw=black] (0.8,0.4) rectangle ++(0.4,0.4);
             \draw[fill=black,draw=black] (1.2,0.4) rectangle ++(0.4,1.2);
             \draw[step=2cm,color=black] (0,0) grid (2,2);
+            \draw[step=0.4cm,color=gray] (3.2,0) grid (5.2,2);
+            \draw[fill=none,draw=black] (3.2,0) rectangle ++(2,2);
+            \draw[fill=black,draw=black] (3.6,1.2) rectangle ++(0.4,0.4);
+            \draw[fill=black,draw=black] (3.6,0.4) rectangle ++(0.8,0.4);
+            \draw[fill=black,draw=black] (4,0.8) rectangle ++(0.8,0.4);
+            \draw[step=0.4cm,color=gray] (6.4,0) grid (8.4,2);
+            \draw[fill=none,draw=black] (6.4,0) rectangle ++(2,2);
+            \draw[fill=black,draw=black] (6.8,0.4) rectangle ++(1.2,0.4);
+            \draw[fill=black,draw=black] (7.6,0.8) rectangle ++(0.4,0.4);
+            \draw[fill=black,draw=black] (7.2,1.2) rectangle ++(0.4,0.4);
+            \draw[step=0.4cm,color=gray] (9.6,0) grid (11.6,2);
+            \draw[fill=none,draw=black] (9.6,0) rectangle ++(2,2);
+            \draw[fill=black,draw=black] (10,0.8) rectangle ++(0.4,0.4);
+            \draw[fill=black,draw=black] (10.4,0) rectangle ++(0.4,0.8);
+            \draw[fill=black,draw=black] (10.8,0.4) rectangle ++(0.4,0.8);
+            \draw[step=0.4cm,color=gray] (12.8,0) grid (14.8,2);
+            \draw[fill=none,draw=black] (12.8,0) rectangle ++(2,2);
+            \draw[fill=black,draw=black] (13.6,0.4) rectangle ++(0.4,0.4);
+            \draw[fill=black,draw=black] (14,0) rectangle ++(0.4,0.4);
+            \draw[fill=black,draw=black] (14.4,0) rectangle ++(0.4,1.2);
         \end{tikzpicture}
-    \caption{Un \textit{glider}}
+    \caption{Un \textit{glider} et sa périodicité}
 \end{figure}
 
-C'est pourquoi \mintinline{latex}|Hashlife| réalise aussi une mémoïsation des résultats de chaque quadrant à l'aide d'une table de hashage, d'où le nom de l'algorithme. Celà permet de réutiliser au maximum les calculs et d'éviter de recalculer les situations récurrentes.
+C'est pourquoi \mintinline{latex}|Hashlife| réalise également une mémoïsation des résultats de chaque quadrant à l'aide d'une table de hachage, d'où le nom de l'algorithme. Cela permet de réutiliser au maximum les calculs et d'éviter de recalculer les situations récurrentes.
 
-Si \mintinline{latex}|Hashlife| permet de réduire drastiquement le temps de calcul pour des grandes grilles et de s'affranchir de bornes de ces dernières en exploitant les motifs qui se répètent, il existe toujours des cas dégénérés où l'algorithme a une complexité similaire à celui naïf si les motifs ne se répètent jamais\footnote{L'algorithme \mintinline{latex}|Quicklife| permet de résoudre ce problème}.
+Mais le nombre de configurations différentes pour une macro-cellule de taille $2^{n} \times 2^{n}$ étant majoré par $2^{4^{n}}$, il est nécessaire de mettre en place des techniques efficaces de mémoïsation pour ne pas saturer la mémoire.
+
+Une technique est de ne considérer qu'une instance de chaque macro-cellule existante dans la grille, et de fonctionner avec un système de pointeurs. Cette technique permet aussi de hasher beaucoup plus facilement chaque grille afin de réduire au maximum la taille de chaque couple clé/valeur dans la table de hashage
+
+\subsection{Complexité}
+
+En raison du nombre de configurations, il est complexe d'avoir une complexité théorique. Empiriquement dans des cas non dégénérés on observe une complexité en temps logarithmique en la taille de la grille. Cependant la mise en place d'un bon \textit{garbage collector} pour réduire au maximum les utilisations de mémoire extrême viennent augmenter cette complexité pour les cas avec peu de répétitions.
+
+Bien que \mintinline{latex}|Hashlife| réduise drastiquement le temps de calcul pour de grandes grilles et permette de s'affranchir de leurs bornes en exploitant les motifs répétitifs, il existe toujours des cas dégénérés où l'algorithme a une complexité similaire à celle de l'approche naïve si les motifs ne se répètent jamais\footnote{L'algorithme \mintinline{latex}|Quicklife| permet de résoudre ce problème}.
 
 \section{Conclusion}
 
-Les automates cellulaires permettent de simuler de nombreux systèmes avec des interactions tels que les feux de forêt. Cependant pour réussir à avoir des simulations d'une taille convaincante (et dans un temps raisonnable) il faut implémenter des algorithmes plus poussés tels que \mintinline{latex}|Hashlife|.
+Les automates cellulaires permettent de simuler de nombreux systèmes à interactions, tels que les feux de forêt. Cependant, pour obtenir des simulations d'une taille convaincante (et dans un temps raisonnable), il est nécessaire d'implémenter des algorithmes plus avancés comme \mintinline{latex}|Hashlife|.
 
 % \subsection{Pseudo code}
 

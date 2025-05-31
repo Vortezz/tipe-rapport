@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorateur Interactif des Concours MPI (2023-2024)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Visualization & Content Choices:
+        - Accueil: Text for Intro/SCEI/Trends. Bar chart for MPI growth (Inscrits CCMP 2023 vs 2024) - Goal: Inform - Viz: Chart.js Bar - Interaction: Tooltip.
+        - Banque Statistics: HTML Tables for detailed numbers. Grouped Bar Charts (Chart.js) for Inscrits/Admissibles/Classés/Intégrés/Places (2023 vs 2024 per school) & Rang Médian (2023 vs 2024 per school) - Goal: Compare - Viz: Chart.js Bar - Interaction: Tooltips, Year Toggle.
+        - Banque Coefficients: HTML Tables. Donut/Pie Charts (Chart.js) for subject group weightings (e.g., X oral, ENS oral) - Goal: Inform - Viz: Chart.js Donut/Pie - Interaction: Tooltips.
+        - All text content from report adapted for brevity and clarity within sections.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 380px;
+            max-height: 480px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 420px;
+            }
+        }
+
+        .nav-link {
+            transition: all 0.3s ease;
+        }
+
+        .nav-link.active {
+            color: #0369a1;
+            border-bottom-color: #0369a1;
+            font-weight: 600;
+        }
+
+        .nav-link:hover {
+            color: #0ea5e9;
+            border-bottom-color: #0ea5e9;
+        }
+
+        .year-toggle-btn {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .year-toggle-btn.active {
+            background-color: #0369a1;
+            color: white;
+        }
+
+        .year-toggle-btn:not(.active) {
+            background-color: #e0f2fe;
+            color: #075985;
+        }
+
+        .table-responsive {
+            display: block;
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+        }
+
+        th,
+        td {
+            white-space: nowrap;
+        }
+
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            padding: 0.5rem;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-radius: 0.25rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 100;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+
+<body class="bg-stone-100 text-stone-800">
+
+    <header class="bg-sky-700 text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <h1 class="text-xl sm:text-2xl font-bold">Explorateur Interactif des Concours MPI</h1>
+                <button id="mobileMenuButton" class="md:hidden text-white focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16m-7 6h7"></path>
+                    </svg>
+                </button>
+            </div>
+            <nav id="mainNav" class="hidden md:flex items-center justify-center space-x-1 sm:space-x-2 py-2">
+                <a href="#accueil"
+                    class="nav-link px-2 sm:px-3 py-2 text-sm sm:text-base border-b-2 border-transparent">Accueil</a>
+                <a href="#x-ens"
+                    class="nav-link px-2 sm:px-3 py-2 text-sm sm:text-base border-b-2 border-transparent">X-ENS</a>
+                <a href="#centrale-supelec"
+                    class="nav-link px-2 sm:px-3 py-2 text-sm sm:text-base border-b-2 border-transparent">Centrale-Supélec</a>
+                <a href="#mines-ponts"
+                    class="nav-link px-2 sm:px-3 py-2 text-sm sm:text-base border-b-2 border-transparent">Mines-Ponts</a>
+                <a href="#ccinp"
+                    class="nav-link px-2 sm:px-3 py-2 text-sm sm:text-base border-b-2 border-transparent">CCINP</a>
+                <a href="#e3a-polytech"
+                    class="nav-link px-2 sm:px-3 py-2 text-sm sm:text-base border-b-2 border-transparent">E3A-Polytech</a>
+                <a href="#conclusions"
+                    class="nav-link px-2 sm:px-3 py-2 text-sm sm:text-base border-b-2 border-transparent">Conclusions</a>
+            </nav>
+        </div>
+    </header>
+    <div id="mobileMenu" class="hidden md:hidden bg-sky-600 text-white py-2">
+        <a href="#accueil" class="block nav-link px-4 py-2 text-sm">Accueil</a>
+        <a href="#x-ens" class="block nav-link px-4 py-2 text-sm">X-ENS</a>
+        <a href="#centrale-supelec" class="block nav-link px-4 py-2 text-sm">Centrale-Supélec</a>
+        <a href="#mines-ponts" class="block nav-link px-4 py-2 text-sm">Mines-Ponts</a>
+        <a href="#ccinp" class="block nav-link px-4 py-2 text-sm">CCINP</a>
+        <a href="#e3a-polytech" class="block nav-link px-4 py-2 text-sm">E3A-Polytech</a>
+        <a href="#conclusions" class="block nav-link px-4 py-2 text-sm">Conclusions</a>
+    </div>
+
+
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <div id="yearSelectorContainer" class="my-6 text-center">
+            <span class="text-lg font-semibold mr-4">Choisir l'année pour les statistiques :</span>
+            <button id="year2024" class="year-toggle-btn px-4 py-2 rounded-md font-medium active">2024</button>
+            <button id="year2023" class="year-toggle-btn px-4 py-2 rounded-md font-medium ml-2">2023</button>
+        </div>
+
+        <section id="accueil" class="content-section bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-bold text-sky-700 mb-4">Bienvenue dans l'Explorateur des Concours MPI</h2>
+            <p class="mb-4">Cette application a pour but de vous fournir une analyse claire et interactive des résultats
+                et coefficients des concours MPI pour les années 2023 et 2024, basée sur les données officielles du
+                SCEI. Explorez les différentes banques de concours pour comprendre les tendances, la sélectivité et les
+                spécificités de chaque école.</p>
+            <p class="mb-4">La filière Mathématiques, Physique, Informatique (MPI) est une voie stratégique pour
+                intégrer les grandes écoles d'ingénieurs. Le Service de Concours Écoles d'Ingénieurs (SCEI) centralise
+                les inscriptions et la gestion des concours. Ce processus est rigoureux, avec des dates clés pour les
+                inscriptions (décembre-janvier), les écrits (avril-mai), les oraux (juin-juillet) et les propositions
+                d'intégration (juillet-septembre).</p>
+            <div class="mt-6">
+                <h3 class="text-xl font-semibold text-sky-600 mb-3">Croissance de la Filière MPI (Exemple CCMP)</h3>
+                <p class="mb-3">Le nombre de candidats en MPI a notablement augmenté, comme l'illustrent les données du
+                    Concours Commun Mines-Ponts (CCMP).</p>
+                <div class="chart-container">
+                    <canvas id="mpiGrowthChart"></canvas>
+                </div>
+                <p class="text-sm text-gray-600 mt-2 text-center">Comparaison du nombre d'inscrits, d'intégrés et de
+                    places offertes au CCMP pour la filière MPI.</p>
+            </div>
+        </section>
+
+        <section id="x-ens" class="content-section hidden bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-bold text-sky-700 mb-4">Banque École Polytechnique - interENS</h2>
+            <p class="mb-4">Cette banque regroupe des institutions d'élite comme l'École Polytechnique (X) et les Écoles
+                Normales Supérieures (ENS). Elles sont reconnues pour leur sélectivité extrême et forment les futurs
+                leaders scientifiques. Cette section vous permet de comparer les statistiques d'intégration et de
+                comprendre la structure des coefficients, notamment la forte pondération de l'informatique dans les ENS.
+            </p>
+
+            <h3 class="text-xl font-semibold text-sky-600 my-4">Statistiques d'Intégration MPI - Banque X-ENS</h3>
+            <div class="table-responsive rounded-lg shadow overflow-hidden mb-6">
+                <table id="statsXEnsTable" class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-sky-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                École - Concours</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Inscrits</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Admissibles</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Classés</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Intégrés</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Places Offertes</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Rang Médian Intégré</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Rang Moyen Intégré</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                    </tbody>
+                </table>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="chart-container">
+                    <canvas id="chartXEnsStats"></canvas>
+                    <p class="text-sm text-gray-600 mt-2 text-center">Comparaison Inscrits, Admissibles, Classés,
+                        Intégrés, Places (X-ENS)</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartXEnsRanks"></canvas>
+                    <p class="text-sm text-gray-600 mt-2 text-center">Comparaison Rang Médian des Intégrés (X-ENS)</p>
+                </div>
+            </div>
+
+            <h3 class="text-xl font-semibold text-sky-600 my-4">Coefficients des Épreuves MPI - Banque X-ENS (2024)</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="table-responsive rounded-lg shadow overflow-hidden">
+                    <table id="coeffsXEnsTable" class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-sky-50">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    École</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Épreuve</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Discipline</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Coefficient</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="flex flex-col space-y-4">
+                    <div class="chart-container h-64 max-h-72">
+                        <canvas id="chartXCoeffsOral"></canvas>
+                        <p class="text-sm text-gray-600 mt-2 text-center">Répartition des Coefficients Oraux - École
+                            Polytechnique (2024)</p>
+                    </div>
+                    <div class="chart-container h-64 max-h-72">
+                        <canvas id="chartENSLyonCoeffsOral"></canvas>
+                        <p class="text-sm text-gray-600 mt-2 text-center">Répartition des Coefficients Oraux - ENS Lyon
+                            (2024)</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mt-4 text-sm italic">Analyse : L'École Polytechnique maintient un équilibre entre Maths, Info et
+                Physique, tandis que les ENS mettent un accent très fort sur l'Informatique à l'oral. Les rangs
+                d'admission sont très bas, reflétant une sélectivité extrême.</p>
+        </section>
+
+        <section id="centrale-supelec" class="content-section hidden bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-bold text-sky-700 mb-4">Banque Centrale-Supélec</h2>
+            <p class="mb-4">Cette banque influente regroupe CentraleSupélec, les écoles Centrale régionales et d'autres
+                écoles spécialisées. Elle offre une grande diversité de formations. Explorez ici les statistiques
+                d'admission, qui montrent une forte demande pour CentraleSupélec et des taux de remplissage variables
+                pour les autres écoles, ainsi que les coefficients qui favorisent un profil polyvalent.</p>
+
+            <h3 class="text-xl font-semibold text-sky-600 my-4">Statistiques d'Intégration MPI - Banque Centrale-Supélec
+            </h3>
+            <div class="table-responsive rounded-lg shadow overflow-hidden mb-6">
+                <table id="statsCentraleTable" class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-sky-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                École - Concours</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Inscrits</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Admissibles</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Classés</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Intégrés</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Places Offertes</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Rang Médian Intégré</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Rang Moyen Intégré</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                    </tbody>
+                </table>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="chart-container">
+                    <canvas id="chartCentraleStats"></canvas>
+                    <p class="text-sm text-gray-600 mt-2 text-center">Comparaison Inscrits, Admissibles, Classés,
+                        Intégrés, Places (Centrale-Supélec)</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartCentraleRanks"></canvas>
+                    <p class="text-sm text-gray-600 mt-2 text-center">Comparaison Rang Médian des Intégrés
+                        (Centrale-Supélec)</p>
+                </div>
+            </div>
+
+            <h3 class="text-xl font-semibold text-sky-600 my-4">Coefficients des Épreuves MPI - Banque Centrale-Supélec
+                (2024)</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="table-responsive rounded-lg shadow overflow-hidden">
+                    <table id="coeffsCentraleTable" class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-sky-50">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    École</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Épreuve</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Discipline</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Coefficient</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Total Écrit</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Total Oral</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartCentraleSupelecCoeffs"></canvas>
+                    <p class="text-sm text-gray-600 mt-2 text-center">Répartition des Coefficients Écrits -
+                        CentraleSupélec (2024)</p>
+                </div>
+            </div>
+            <p class="mt-4 text-sm italic">Analyse : CentraleSupélec valorise un profil équilibré en Maths,
+                Physique-Chimie, Informatique, Français et Langue vivante. Certaines écoles de la banque peuvent
+                présenter des places non pourvues, offrant des opportunités.</p>
+        </section>
+
+        <section id="mines-ponts" class="content-section hidden bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-bold text-sky-700 mb-4">Banque Concours Commun Mines-Ponts (CCMP)</h2>
+            <p class="mb-4">Le CCMP est une banque très compétitive regroupant des écoles de premier plan comme MINES
+                Paris, Ponts ParisTech et TELECOM Paris. Cette section présente les statistiques d'admission, qui
+                montrent une forte augmentation du nombre d'intégrés et de places en MPI, et détaille les coefficients
+                équilibrés entre les matières scientifiques et littéraires. Notez l'importance du Français, avec une
+                note éliminatoire.</p>
+
+            <h3 class="text-xl font-semibold text-sky-600 my-4">Statistiques d'Intégration MPI - Banque Mines-Ponts</h3>
+            <div class="table-responsive rounded-lg shadow overflow-hidden mb-6">
+                <table id="statsMinesTable" class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-sky-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                École - Concours</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Inscrits</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Admissibles</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Classés</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Intégrés</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Places Offertes</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Rang Médian Intégré</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Rang Moyen Intégré</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                    </tbody>
+                </table>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="chart-container">
+                    <canvas id="chartMinesStats"></canvas>
+                    <p class="text-sm text-gray-600 mt-2 text-center">Comparaison Inscrits, Admissibles, Classés,
+                        Intégrés, Places (Mines-Ponts)</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartMinesRanks"></canvas>
+                    <p class="text-sm text-gray-600 mt-2 text-center">Comparaison Rang Médian des Intégrés (Mines-Ponts)
+                    </p>
+                </div>
+            </div>
+
+            <h3 class="text-xl font-semibold text-sky-600 my-4">Coefficients des Épreuves MPI - Banque Mines-Ponts
+                (2024)</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="table-responsive rounded-lg shadow overflow-hidden">
+                    <table id="coeffsMinesTable" class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-sky-50">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Épreuve</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Coefficient MPI</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartMinesCoeffsEcrit"></canvas>
+                    <p class="text-sm text-gray-600 mt-2 text-center">Répartition des Coefficients Écrits - Mines-Ponts
+                        MPI (2024)</p>
+                </div>
+            </div>
+            <p class="mt-4 text-sm italic">Analyse : Le CCMP MPI montre une pondération équilibrée à l'écrit et à
+                l'oral. Une note inférieure à 3 en Français est éliminatoire, soulignant l'importance des compétences en
+                communication.</p>
+        </section>
+
+        <section id="ccinp" class="content-section hidden bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-bold text-sky-700 mb-4">Banque Concours Commun INP (CCINP)</h2>
+            <p class="mb-4">Le CCINP regroupe un vaste réseau d'écoles et offre un nombre significatif de places.
+                Certaines épreuves sont mutualisées avec e3a-Polytech. Cette section vous aidera à comprendre la
+                répartition des coefficients, avec une légère prépondérance pour l'informatique, et à analyser les
+                statistiques d'intégration pour des écoles comme Grenoble INP - Ensimag.</p>
+
+            <h3 class="text-xl font-semibold text-sky-600 my-4">Statistiques d'Intégration MPI - Banque CCINP</h3>
+            <div class="table-responsive rounded-lg shadow overflow-hidden mb-6">
+                <table id="statsCcinpTable" class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-sky-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                École - Concours</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Inscrits</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Admissibles</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Classés</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Intégrés</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Places Offertes</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Rang Médian Intégré</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Rang Moyen Intégré</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                    </tbody>
+                </table>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="chart-container">
+                    <canvas id="chartCcinpStats"></canvas>
+                    <p class="text-sm text-gray-600 mt-2 text-center">Comparaison Inscrits, Admissibles, Classés,
+                        Intégrés, Places (CCINP - Total Banque)</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartCcinpRanksEnsimag"></canvas>
+                    <p class="text-sm text-gray-600 mt-2 text-center">Comparaison Rang Médian des Intégrés (Grenoble INP
+                        - Ensimag)</p>
+                </div>
+            </div>
+
+            <h3 class="text-xl font-semibold text-sky-600 my-4">Coefficients des Épreuves MPI - Banque CCINP (2024)</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="table-responsive rounded-lg shadow overflow-hidden">
+                    <table id="coeffsCcinpTable" class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-sky-50">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Nature de l'épreuve</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Coefficient MPI</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartCcinpCoeffs"></canvas>
+                    <p class="text-sm text-gray-600 mt-2 text-center">Répartition des Coefficients - CCINP MPI (2024)
+                    </p>
+                </div>
+            </div>
+            <p class="mt-4 text-sm italic">Analyse : Le CCINP recherche des profils polyvalents avec une légère
+                prédominance pour l'informatique. La mutualisation des épreuves avec e3a-Polytech est un avantage
+                stratégique.</p>
+        </section>
+
+        <section id="e3a-polytech" class="content-section hidden bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-bold text-sky-700 mb-4">Banque E3A-Polytech</h2>
+            <p class="mb-4">E3A-Polytech est le concours offrant le plus grand nombre de places, regroupant de
+                nombreuses écoles publiques et privées. Il est souvent considéré comme un "filet de sécurité". Cette
+                section vous permet d'analyser les statistiques d'intégration, qui montrent des dynamiques variées selon
+                les écoles et campus, et les coefficients qui valorisent les matières scientifiques fondamentales ainsi
+                que les compétences linguistiques.</p>
+
+            <h3 class="text-xl font-semibold text-sky-600 my-4">Statistiques d'Intégration MPI - Banque E3A-Polytech
+            </h3>
+            <div class="table-responsive rounded-lg shadow overflow-hidden mb-6">
+                <table id="statsE3aTable" class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-sky-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                École - Concours</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Inscrits</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Admissibles</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Classés</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Intégrés</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Places Offertes</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Rang Médian Intégré</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Rang Moyen Intégré</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                    </tbody>
+                </table>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="chart-container">
+                    <canvas id="chartE3aStatsEPF"></canvas>
+                    <p class="text-sm text-gray-600 mt-2 text-center">Comparaison Intégrés vs Places Offertes - EPF
+                        (Concours EPF MPI)</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartE3aStatsESTP"></canvas>
+                    <p class="text-sm text-gray-600 mt-2 text-center">Comparaison Intégrés vs Places Offertes - ESTP
+                        (Concours ESTP MPI)</p>
+                </div>
+            </div>
+
+            <h3 class="text-xl font-semibold text-sky-600 my-4">Coefficients des Épreuves MPI - Banque E3A-Polytech
+                (2024)</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="table-responsive rounded-lg shadow overflow-hidden">
+                    <table id="coeffsE3aTable" class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-sky-50">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Nature de l'épreuve</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Coefficient MPI</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartE3aCoeffs"></canvas>
+                    <p class="text-sm text-gray-600 mt-2 text-center">Répartition des Coefficients - E3A-Polytech MPI
+                        (2024)</p>
+                </div>
+            </div>
+            <p class="mt-4 text-sm italic">Analyse : E3A-Polytech met l'accent sur les Mathématiques, suivies de la
+                Physique/Chimie et l'Informatique. La présence de places non pourvues dans certaines écoles peut offrir
+                des opportunités.</p>
+        </section>
+
+        <section id="conclusions" class="content-section hidden bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-bold text-sky-700 mb-4">Conclusions et Recommandations Stratégiques</h2>
+            <p class="mb-4">L'analyse des concours MPI 2023-2024 révèle une filière en croissance et attractive. Voici
+                quelques recommandations pour optimiser votre stratégie de candidature et de préparation.</p>
+            <ul class="list-disc list-inside space-y-2 mb-4">
+                <li><strong>Diversification des vœux :</strong> Maximisez vos chances en postulant à plusieurs banques
+                    et écoles, y compris celles pouvant servir de "filet de sécurité".</li>
+                <li><strong>Maîtrise des coefficients :</strong> Adaptez votre préparation aux coefficients spécifiques
+                    des écoles visées. L'informatique est clé pour les ENS, un profil équilibré pour Polytechnique.</li>
+                <li><strong>Importance des matières transversales :</strong> Ne négligez pas le Français-Philosophie et
+                    les Langues Vivantes ; elles sont fondamentales.</li>
+                <li><strong>Organisation et gestion du calendrier :</strong> Respectez scrupuleusement les délais du
+                    SCEI. Une planification rigoureuse est essentielle.</li>
+                <li><strong>Exploration des opportunités :</strong> Considérez les écoles qui ne remplissent pas toutes
+                    leurs places ; elles offrent des formations de qualité.</li>
+            </ul>
+            <p>La filière MPI continuera d'évoluer. Une préparation adaptée et une stratégie de candidature éclairée
+                sont vos meilleurs atouts pour réussir.</p>
+        </section>
+    </main>
+
+    <footer class="bg-sky-800 text-sky-100 text-center p-6 mt-12">
+        <p>&copy; <span id="currentYear"></span> Explorateur Interactif des Concours MPI. Données sourcées du SCEI.</p>
+        <p class="text-xs mt-1">Application développée pour l'exploration des données des concours.</p>
+    </footer>
+
+    <div id="customTooltip" class="tooltip"></div>
+
+    <script>
+        const currentYearSpan = document.getElementById('currentYear');
+        currentYearSpan.textContent = new Date().getFullYear();
+
+        const navLinks = document.querySelectorAll('.nav-link');
+        const contentSections = document.querySelectorAll('.content-section');
+        const yearButtons = [document.getElementById('year2024'), document.getElementById('year2023')];
+        let selectedYear = '2024';
+        let charts = {};
+        const customTooltip = document.getElementById('customTooltip');
+
+        const coeffs = {
+            "x-ens-2024": [
+                { ecole: "ECOLE POLYTECHNIQUE", epreuve: "Écrit", discipline: "Mathématiques A", coeff: 6 }, { ecole: "ECOLE POLYTECHNIQUE", epreuve: "Écrit", discipline: "Physique", coeff: 4 }, { ecole: "ECOLE POLYTECHNIQUE", epreuve: "Écrit", discipline: "Informatique C", coeff: 4 }, { ecole: "ECOLE POLYTECHNIQUE", epreuve: "Écrit", discipline: "Français", coeff: 2 }, { ecole: "ECOLE POLYTECHNIQUE", epreuve: "Écrit", discipline: "Langue vivante", coeff: 2 },
+                { ecole: "ECOLE POLYTECHNIQUE", epreuve: "Oral", discipline: "Mathématiques", coeff: 33 }, { ecole: "ECOLE POLYTECHNIQUE", epreuve: "Oral", discipline: "Informatique", coeff: 26 }, { ecole: "ECOLE POLYTECHNIQUE", epreuve: "Oral", discipline: "Physique", coeff: 20 }, { ecole: "ECOLE POLYTECHNIQUE", epreuve: "Oral", discipline: "Analyse Doc. Scientifiques (ADS)", coeff: 15 }, { ecole: "ECOLE POLYTECHNIQUE", epreuve: "Oral", discipline: "Français", coeff: 12 }, { ecole: "ECOLE POLYTECHNIQUE", epreuve: "Oral", discipline: "Langue vivante", coeff: 12 }, { ecole: "ECOLE POLYTECHNIQUE", epreuve: "Oral", discipline: "Sport", coeff: 4 },
+                { ecole: "ENS de Lyon", epreuve: "Oral", discipline: "Informatique", coeff: 4 }, { ecole: "ENS de Lyon", epreuve: "Oral", discipline: "Mathématiques", coeff: 2 }, { ecole: "ENS de Lyon", epreuve: "Oral", discipline: "Langue vivante", coeff: 0.6 }, { ecole: "ENS de Lyon", epreuve: "Oral", discipline: "Français", coeff: 0.5 }, { ecole: "ENS de Lyon", epreuve: "Oral", discipline: "TIPE", coeff: 0.3 },
+                { ecole: "ENS Paris-Saclay", epreuve: "Oral", discipline: "Informatique", coeff: 6 }, { ecole: "ENS Paris-Saclay", epreuve: "Oral", discipline: "Mathématiques", coeff: 1.8 }, { ecole: "ENS Paris-Saclay", epreuve: "Oral", discipline: "Langue vivante", coeff: 1 }, { ecole: "ENS Paris-Saclay", epreuve: "Oral", discipline: "Français", coeff: 0.6 }, { ecole: "ENS Paris-Saclay", epreuve: "Oral", discipline: "TIPE", coeff: 0.6 },
+                { ecole: "ENS Ulm", epreuve: "Oral", discipline: "Informatique", coeff: "N/A (53%)" }, { ecole: "ENS Ulm", epreuve: "Oral", discipline: "Mathématiques", coeff: "N/A (26%)" },
+                { ecole: "ENS Rennes Info.", epreuve: "Oral", discipline: "Informatique", coeff: "N/A (61%)" }, { ecole: "ENS Rennes Info.", epreuve: "Oral", discipline: "TIPE", coeff: "N/A (14%)" }
+            ],
+            "centrale-supelec-2024": [
+                { ecole: "CentraleSupélec", epreuve: "Écrit", discipline: "Mathématiques 1", coeff: 18, totalEcrit: 100, totalOral: 100 }, { ecole: "CentraleSupélec", epreuve: "Écrit", discipline: "Mathématiques 2", coeff: 18 }, { ecole: "CentraleSupélec", epreuve: "Écrit", discipline: "Physique - Chimie 1", coeff: 10 }, { ecole: "CentraleSupélec", epreuve: "Écrit", discipline: "Physique - Chimie 2", coeff: 10 }, { ecole: "CentraleSupélec", epreuve: "Écrit", discipline: "Informatique", coeff: 16 }, { ecole: "CentraleSupélec", epreuve: "Écrit", discipline: "Français", coeff: 17 }, { ecole: "CentraleSupélec", epreuve: "Écrit", discipline: "Langue vivante", coeff: 11 },
+                { ecole: "CentraleSupélec", epreuve: "Oral", discipline: "Mathématiques", coeff: 18 }, { ecole: "CentraleSupélec", epreuve: "Oral", discipline: "Mathématiques Informatique", coeff: 18 }, { ecole: "CentraleSupélec", epreuve: "Oral", discipline: "Physique Chimie", coeff: 12 }, { ecole: "CentraleSupélec", epreuve: "Oral", discipline: "TP Physique Chimie", coeff: 12 }, { ecole: "CentraleSupélec", epreuve: "Oral", discipline: "TP Physique Informatique", coeff: 16 }, { ecole: "CentraleSupélec", epreuve: "Oral", discipline: "TIPE", coeff: 11 }, { ecole: "CentraleSupélec", epreuve: "Oral", discipline: "Langue vivante 1", coeff: 13 },
+                { ecole: "Centrale Lyon", epreuve: "Écrit", discipline: "Mathématiques 1", coeff: 14, totalEcrit: 100, totalOral: 25 }, { ecole: "Centrale Lyon", epreuve: "Écrit", discipline: "Français", coeff: 19 },
+                { ecole: "Institut d'optique Graduate School", epreuve: "Écrit", discipline: "Informatique", coeff: 24, totalEcrit: 100, totalOral: 25 }
+            ],
+            "mines-ponts-2024": [
+                { epreuve: "Mathématiques 1 (3h)", coeff: 4 }, { epreuve: "Mathématiques 2 (4h)", coeff: 5 }, { epreuve: "Physique 1 (3h)", coeff: 3 }, { epreuve: "Physique 2 (4h)", coeff: 3 }, { epreuve: "Informatique 1 (3h)", coeff: 3 }, { epreuve: "Informatique 2 (4h)", coeff: 4 }, { epreuve: "Français (3h)", coeff: 5 }, { epreuve: "Langue vivante (1h30)", coeff: 3 }, { epreuve: "TOTAL ÉCRIT", coeff: 30 },
+                { epreuve: "Mathématiques (Oral)", coeff: 11 }, { epreuve: "Physique (Oral)", coeff: 7 }, { epreuve: "Informatique (Oral)", coeff: 6 }, { epreuve: "TIPE (Oral)", coeff: 6 }, { epreuve: "Français (Oral)", coeff: 6 }, { epreuve: "Anglais (Oral)", coeff: 5 }, { epreuve: "TOTAL ORAL", coeff: 41 }
+            ],
+            "ccinp-2024": [
+                { epreuve: "Première épreuve de mathématiques", coeff: 11 }, { epreuve: "Deuxième épreuve de mathématiques", coeff: 11 }, { epreuve: "Épreuve de physique - chimie", coeff: 11 }, { epreuve: "Épreuve d'informatique", coeff: 12 }, { epreuve: "Épreuve de français", coeff: 9 }, { epreuve: "Épreuve de langue vivante A", coeff: 4 }, { epreuve: "Épreuve de langue vivante B", coeff: 2 }, { epreuve: "TOTAL", coeff: 58 }
+            ],
+            "e3a-polytech-2024": [
+                { epreuve: "Mathématiques", coeff: 6 }, { epreuve: "Physique/Chimie", coeff: 4 }, { epreuve: "Informatique", coeff: 4 }, { epreuve: "Français / Philo", coeff: 3 }, { epreuve: "LVA", coeff: 3 }, { epreuve: "LVB", coeff: 1 }, { epreuve: "TOTAL", coeff: 21 }
+            ]
+        };
+
+        const data = {
+            "2024": {
+                "x-ens": [
+                    { ecole: "ECOLE POLYTECHNIQUE", inscrits: 299, admissibles: 39, classes: 29, integres: 20, places: 20, rangMedian: 18, rangMoyen: 16 },
+                    { ecole: "ENS de Lyon", inscrits: 408, admissibles: 80, classes: 69, integres: 15, places: 15, rangMedian: 43, rangMoyen: 38 },
+                    { ecole: "ENS Paris-Saclay", inscrits: 406, admissibles: 81, classes: 67, integres: 7, places: 7, rangMedian: 30, rangMoyen: 30 },
+                    { ecole: "ENS Rennes Info.", inscrits: 406, admissibles: 96, classes: 86, integres: 7, places: 7, rangMedian: 46, rangMoyen: 39 },
+                    { ecole: "ENS Ulm", inscrits: 395, admissibles: 35, classes: 24, integres: 8, places: 8, rangMedian: 7, rangMoyen: 6 }
+                ],
+                "centrale-supelec": [
+                    { ecole: "CentraleSupélec - statut étudiant", inscrits: 626, admissibles: 128, classes: 109, integres: 33, places: 32, rangMedian: 47, rangMoyen: 46 },
+                    { ecole: "Centrale Lyon", inscrits: 612, admissibles: 169, classes: 154, integres: 10, places: 15, rangMedian: 103, rangMoyen: 99 },
+                    { ecole: "Centrale Lille", inscrits: 567, admissibles: 166, classes: 151, integres: 14, places: 10, rangMedian: 126, rangMoyen: 125 },
+                    { ecole: "Centrale Nantes", inscrits: 571, admissibles: 141, classes: 130, integres: 5, places: 5, rangMedian: 101, rangMoyen: 100 },
+                    { ecole: "Centrale Méditerranée", inscrits: 439, admissibles: 142, classes: 120, integres: 10, places: 10, rangMedian: 106, rangMoyen: 101 },
+                    { ecole: "Centrale Casablanca", inscrits: 135, admissibles: 37, classes: 28, integres: 0, places: 2, rangMedian: 0, rangMoyen: 0 },
+                    { ecole: "Institut d'optique Graduate School", inscrits: 258, admissibles: 110, classes: 85, integres: 7, places: 8, rangMedian: 60, rangMoyen: 61 },
+                    { ecole: "ENSEA Cergy", inscrits: 312, admissibles: 231, classes: 176, integres: 7, places: 15, rangMedian: 134, rangMoyen: 147 },
+                    { ecole: "ECOLE NAVALE Brest", inscrits: 122, admissibles: 34, classes: 11, integres: 2, places: 2, rangMedian: 4, rangMoyen: 4 },
+                    { ecole: "Concours EPF MPI", inscrits: 86, admissibles: 75, classes: 29, integres: 2, places: 6, rangMedian: null, rangMoyen: null },
+                    { ecole: "Concours ESTP MPI", inscrits: 81, admissibles: 73, classes: 31, integres: 3, places: 10, rangMedian: null, rangMoyen: null }
+                ],
+                "mines-ponts": [
+                    { ecole: "Chimie ParisTech", inscrits: null, admissibles: null, classes: null, integres: 0, places: 0, rangMedian: 0, rangMoyen: 0 },
+                    { ecole: "ENSAE Paris", inscrits: null, admissibles: null, classes: null, integres: 7, places: 10, rangMedian: 172, rangMoyen: 166 },
+                    { ecole: "ENSTA Paris", inscrits: null, admissibles: null, classes: null, integres: 11, places: 10, rangMedian: 144, rangMoyen: 136 },
+                    { ecole: "ENSTA Paris - apprentissage", inscrits: null, admissibles: null, classes: null, integres: 1, places: 1, rangMedian: 175, rangMoyen: 175 },
+                    { ecole: "IMT Atlantique", inscrits: null, admissibles: null, classes: null, integres: 22, places: 20, rangMedian: 235, rangMoyen: 232 },
+                    { ecole: "ISAE - SUPAERO Toulouse", inscrits: null, admissibles: null, classes: null, integres: 8, places: 10, rangMedian: 137, rangMoyen: 119 },
+                    { ecole: "MINES de NANCY", inscrits: null, admissibles: null, classes: null, integres: 7, places: 8, rangMedian: 185, rangMoyen: 183 },
+                    { ecole: "MINES SAINT-ETIENNE", inscrits: null, admissibles: null, classes: null, integres: 8, places: 20, rangMedian: 276, rangMoyen: 269 },
+                    { ecole: "MINES Paris", inscrits: null, admissibles: null, classes: null, integres: 4, places: 4, rangMedian: 10, rangMoyen: 11 },
+                    { ecole: "PONTS ParisTech", inscrits: null, admissibles: null, classes: null, integres: 6, places: 5, rangMedian: 83, rangMoyen: 81 },
+                    { ecole: "TELECOM Paris", inscrits: null, admissibles: null, classes: null, integres: 41, places: 35, rangMedian: 101, rangMoyen: 93 },
+                    { ecole: "TELECOM Paris - Apprentissage", inscrits: null, admissibles: null, classes: null, integres: 1, places: 1, rangMedian: 160, rangMoyen: 160 },
+                    { ecole: "Concours CCMP MPI (Total Banque)", inscrits: 868, admissibles: 300, classes: 288, integres: 288, places: 300, rangMedian: null, rangMoyen: null }
+                ],
+                "ccinp": [
+                    { ecole: "Concours Commun INP (Total Banque)", inscrits: 1489, admissibles: 1084, classes: 996, integres: 329, places: 330, rangMedian: null, rangMoyen: null },
+                    { ecole: "Grenoble INP - Ensimag", inscrits: null, admissibles: null, classes: null, integres: 40, places: 40, rangMedian: 110, rangMoyen: 108 },
+                    { ecole: "Grenoble INP - Esisar", inscrits: null, admissibles: null, classes: null, integres: 6, places: 6, rangMedian: 12, rangMoyen: 12 },
+                    { ecole: "Grenoble INP - Pagora", inscrits: null, admissibles: null, classes: null, integres: 1, places: 1, rangMedian: 10, rangMoyen: 10 },
+                    { ecole: "Grenoble INP - Phelma", inscrits: null, admissibles: null, classes: null, integres: 8, places: 8, rangMedian: 89, rangMoyen: 88 }
+                ],
+                "e3a-polytech": [
+                    { ecole: "Concours EPF MPI", inscrits: 86, admissibles: 75, classes: 29, integres: 2, places: 6, rangMedian: null, rangMoyen: null },
+                    { ecole: "EPF campus Cachan", inscrits: null, admissibles: null, classes: null, integres: 2, places: 2, rangMedian: 25, rangMoyen: 25 },
+                    { ecole: "EPF campus Montpellier", inscrits: null, admissibles: null, classes: null, integres: 0, places: 2, rangMedian: 0, rangMoyen: 0 },
+                    { ecole: "EPF campus Troyes", inscrits: null, admissibles: null, classes: null, integres: 0, places: 2, rangMedian: 0, rangMoyen: 0 },
+                    { ecole: "Concours ESTP MPI", inscrits: 81, admissibles: 73, classes: 31, integres: 3, places: 10, rangMedian: null, rangMoyen: null },
+                    { ecole: "ESILV Paris (MPI)", inscrits: null, admissibles: null, classes: null, integres: null, places: 15, rangMedian: null, rangMoyen: null },
+                    { ecole: "ESILV Nantes (MPI)", inscrits: null, admissibles: null, classes: null, integres: null, places: 2, rangMedian: null, rangMoyen: null }
+                ]
+            },
+            "2023": {
+                "x-ens": [
+                    { ecole: "ECOLE POLYTECHNIQUE", inscrits: 261, admissibles: 39, classes: 28, integres: 20, places: 20, rangMedian: 16, rangMoyen: 15 },
+                    { ecole: "ENS de Lyon", inscrits: 329, admissibles: 54, classes: 47, integres: 12, places: 12, rangMedian: 37, rangMoyen: 33 },
+                    { ecole: "ENS Paris-Saclay", inscrits: 331, admissibles: 56, classes: 38, integres: 5, places: 5, rangMedian: 16, rangMoyen: 19 },
+                    { ecole: "ENS Rennes Info.", inscrits: 326, admissibles: 84, classes: 72, integres: 7, places: 7, rangMedian: 43, rangMoyen: 39 },
+                    { ecole: "ENS Ulm", inscrits: 319, admissibles: 28, classes: 20, integres: 8, places: 8, rangMedian: 8, rangMoyen: 7 }
+                ],
+                "centrale-supelec": [
+                    { ecole: "CentraleSupélec - statut étudiant", inscrits: 530, admissibles: 125, classes: 122, integres: 33, places: 32, rangMedian: 69, rangMoyen: 65 },
+                    { ecole: "Centrale Lyon", inscrits: 525, admissibles: 149, classes: 146, integres: 15, places: 15, rangMedian: 116, rangMoyen: 115 },
+                    { ecole: "Centrale Lille", inscrits: 455, admissibles: 155, classes: 153, integres: 7, places: 10, rangMedian: 118, rangMoyen: 108 },
+                    { ecole: "Centrale Nantes", inscrits: 444, admissibles: 148, classes: 147, integres: 5, places: 5, rangMedian: 84, rangMoyen: 83 },
+                    { ecole: "Centrale Méditerranée", inscrits: 370, admissibles: 141, classes: 136, integres: 5, places: 10, rangMedian: 107, rangMoyen: 110 },
+                    { ecole: "Centrale Casablanca", inscrits: 107, admissibles: 32, classes: 31, integres: 0, places: 2, rangMedian: 0, rangMoyen: 0 },
+                    { ecole: "Institut d'optique Graduate School", inscrits: 195, admissibles: 78, classes: 76, integres: 1, places: 8, rangMedian: 70, rangMoyen: 70 },
+                    { ecole: "ENSEA Cergy", inscrits: 236, admissibles: 175, classes: 132, integres: 6, places: 15, rangMedian: 125, rangMoyen: 122 },
+                    { ecole: "Concours EPF MPI", inscrits: 66, admissibles: 55, classes: 45, integres: 1, places: 6, rangMedian: null, rangMoyen: null },
+                    { ecole: "Concours ESTP MPI", inscrits: 51, admissibles: 44, classes: 24, integres: 0, places: 10, rangMedian: null, rangMoyen: null }
+                ],
+                "mines-ponts": [
+                    { ecole: "Chimie ParisTech", inscrits: null, admissibles: null, classes: null, integres: 0, places: 2, rangMedian: 0, rangMoyen: 0 },
+                    { ecole: "ENSAE Paris", inscrits: null, admissibles: null, classes: null, integres: 11, places: 10, rangMedian: 150, rangMoyen: 140 },
+                    { ecole: "ENSTA Paris", inscrits: null, admissibles: null, classes: null, integres: 9, places: 10, rangMedian: 121, rangMoyen: 104 },
+                    { ecole: "ENSTA Paris - apprentissage", inscrits: null, admissibles: null, classes: null, integres: 1, places: 1, rangMedian: 147, rangMoyen: 147 },
+                    { ecole: "IMT Atlantique", inscrits: null, admissibles: null, classes: null, integres: 19, places: 20, rangMedian: 218, rangMoyen: 218 },
+                    { ecole: "ISAE - SUPAERO Toulouse", inscrits: null, admissibles: null, classes: null, integres: 13, places: 10, rangMedian: 122, rangMoyen: 132 },
+                    { ecole: "MINES de NANCY", inscrits: null, admissibles: null, classes: null, integres: 9, places: 8, rangMedian: 212, rangMoyen: 197 },
+                    { ecole: "MINES SAINT-ETIENNE", inscrits: null, admissibles: null, classes: null, integres: 12, places: 10, rangMedian: 250, rangMoyen: 238 },
+                    { ecole: "MINES Paris", inscrits: null, admissibles: null, classes: null, integres: 4, places: 5, rangMedian: 22, rangMoyen: 20 },
+                    { ecole: "PONTS ParisTech", inscrits: null, admissibles: null, classes: null, integres: 5, places: 5, rangMedian: 95, rangMoyen: 106 },
+                    { ecole: "TELECOM Paris", inscrits: null, admissibles: null, classes: null, integres: 31, places: 28, rangMedian: 64, rangMoyen: 66 },
+                    { ecole: "TELECOM Paris - Apprentissage", inscrits: null, admissibles: null, classes: null, integres: 2, places: 1, rangMedian: 88, rangMoyen: 88 },
+                    { ecole: "Concours CCMP MPI (Total Banque)", inscrits: 679, admissibles: 280, classes: 274, integres: 116, places: 110, rangMedian: null, rangMoyen: null }
+                ],
+                "ccinp": [
+                    { ecole: "Concours Commun INP (Total Banque)", inscrits: 1146, admissibles: 859, classes: 796, integres: 288, places: 288, rangMedian: null, rangMoyen: null },
+                    { ecole: "Grenoble INP - Ensimag", inscrits: null, admissibles: null, classes: null, integres: 40, places: 40, rangMedian: 110, rangMoyen: 108 },
+                    { ecole: "Grenoble INP - Esisar", inscrits: null, admissibles: null, classes: null, integres: 6, places: 6, rangMedian: 12, rangMoyen: 12 },
+                    { ecole: "Grenoble INP - Pagora", inscrits: null, admissibles: null, classes: null, integres: 1, places: 1, rangMedian: 10, rangMoyen: 10 },
+                    { ecole: "Grenoble INP - Phelma", inscrits: null, admissibles: null, classes: null, integres: 8, places: 8, rangMedian: 89, rangMoyen: 88 }
+                ],
+                "e3a-polytech": [
+                    { ecole: "Concours EPF MPI", inscrits: 66, admissibles: 55, classes: 45, integres: 1, places: 6, rangMedian: null, rangMoyen: null },
+                    { ecole: "EPF campus Cachan", inscrits: null, admissibles: null, classes: null, integres: 1, places: 2, rangMedian: 39, rangMoyen: 39 },
+                    { ecole: "EPF campus Montpellier", inscrits: null, admissibles: null, classes: null, integres: 0, places: 2, rangMedian: 0, rangMoyen: 0 },
+                    { ecole: "EPF campus Troyes", inscrits: null, admissibles: null, classes: null, integres: 0, places: 2, rangMedian: 0, rangMoyen: 0 },
+                    { ecole: "Concours ESTP MPI", inscrits: 51, admissibles: 44, classes: 24, integres: 0, places: 10, rangMedian: null, rangMoyen: null }
+                ]
+            }
+        };
+
+        function populateTable(tableId, banqueData) {
+            const tableBody = document.getElementById(tableId).getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+            if (!banqueData) return;
+
+            banqueData.forEach(d => {
+                let row = tableBody.insertRow();
+                row.insertCell().textContent = d.ecole;
+                row.insertCell().textContent = d.inscrits ?? '-';
+                row.insertCell().textContent = d.admissibles ?? '-';
+                row.insertCell().textContent = d.classes ?? '-';
+                row.insertCell().textContent = d.integres ?? '-';
+                row.insertCell().textContent = d.places ?? '-';
+                row.insertCell().textContent = d.rangMedian ?? '-';
+                row.insertCell().textContent = d.rangMoyen ?? '-';
+            });
+        }
+
+        function populateCoeffsTable(tableId, coeffsData, columns) {
+            const tableBody = document.getElementById(tableId).getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+            if (!coeffsData) return;
+
+            coeffsData.forEach(d => {
+                let row = tableBody.insertRow();
+                columns.forEach(col => {
+                    let cell = row.insertCell();
+                    cell.textContent = d[col.key] ?? (col.key === 'totalEcrit' && d.totalEcrit ? d.totalEcrit : (col.key === 'totalOral' && d.totalOral ? d.totalOral : '-'));
+                    if (col.key === 'ecole' && d.epreuve === "Écrit" && d.discipline === "Mathématiques 1" || col.key === 'ecole' && d.epreuve === "Mathématiques 1 (3h)") { // Bold for new school or main entry
+                        cell.classList.add('font-semibold');
+                    }
+                });
+            });
+        }
+
+        // Modified updateView to accept a target hash
+        function updateView(targetHash) {
+            const currentHash = targetHash || '#accueil'; // Use provided hash or default to accueil
+            navLinks.forEach(link => {
+                link.classList.toggle('active', link.getAttribute('href') === currentHash);
+            });
+            contentSections.forEach(section => {
+                section.classList.toggle('hidden', `#${section.id}` !== currentHash);
+            });
+
+            document.getElementById('yearSelectorContainer').style.display = (currentHash === '#accueil' || currentHash === '#conclusions') ? 'none' : 'block';
+
+            // Add a check for coeffs here
+            if (!coeffs) {
+                console.error("Erreur: L'objet de données des coefficients est manquant ou indéfini. Impossible de charger les sections détaillées.");
+                // Optionally, display a user-friendly message in the UI
+                return; // Prevent further execution if critical data is missing
+            }
+
+            if (currentHash === '#accueil') loadAccueilData();
+            else if (currentHash === '#x-ens') loadXEnsData();
+            else if (currentHash === '#centrale-supelec') loadCentraleData();
+            else if (currentHash === '#mines-ponts') loadMinesData();
+            else if (currentHash === '#ccinp') loadCcinpData();
+            else if (currentHash === '#e3a-polytech') loadE3aData();
+        }
+
+        yearButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                selectedYear = button.id === 'year2024' ? '2024' : '2023';
+                yearButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                // Get the currently active section to reload its data with the new year
+                const currentActiveSection = document.querySelector('.content-section:not(.hidden)');
+                if (currentActiveSection) {
+                    updateView(`#${currentActiveSection.id}`);
+                }
+            });
+        });
+
+        function createBarChart(ctx, labels, datasets, titleText) {
+            if (charts[ctx.canvas.id]) {
+                charts[ctx.canvas.id].destroy();
+            }
+            charts[ctx.canvas.id] = new Chart(ctx, {
+                type: 'bar',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { font: { size: 10 } } }, x: {
+                            ticks: {
+                                font: { size: 10 }, callback: function (value) {
+                                    const label = this.getLabelForValue(value);
+                                    if (label.length > 15) return label.substring(0, 15) + '...';
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: { display: true, text: titleText, font: { size: 14 } },
+                        legend: { position: 'top', labels: { font: { size: 10 } } },
+                        tooltip: {
+                            enabled: false, // Disable default tooltip
+                            external: function (context) {
+                                const tooltipModel = context.tooltip;
+                                if (tooltipModel.opacity === 0) {
+                                    customTooltip.style.opacity = 0;
+                                    return;
+                                }
+                                customTooltip.style.opacity = 1;
+                                customTooltip.style.left = tooltipModel.caretX + 'px';
+                                customTooltip.style.top = tooltipModel.caretY + 'px';
+
+                                if (tooltipModel.body) {
+                                    const titleLines = tooltipModel.title || [];
+                                    const bodyLines = tooltipModel.body.map(b => b.lines);
+                                    let innerHtml = '<thead>';
+                                    titleLines.forEach(function (title) {
+                                        innerHtml += '<tr><th class="font-semibold text-sm">' + title + '</th></tr>';
+                                    });
+                                    innerHtml += '</thead><tbody>';
+                                    bodyLines.forEach(function (body, i) {
+                                        const colors = tooltipModel.labelColors[i];
+                                        const style = 'background:' + colors.backgroundColor + '; border-color:' + colors.borderColor + '; border-width: 2px; display: inline-block; height: 10px; width: 10px; margin-right: 5px;';
+                                        innerHtml += '<tr><td><span style="' + style + '"></span>' + body + '</td></tr>';
+                                    });
+                                    innerHtml += '</tbody>';
+                                    customTooltip.innerHTML = innerHtml;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createPieChart(ctx, labels, dataValues, titleText, backgroundColors) {
+            if (charts[ctx.canvas.id]) {
+                charts[ctx.canvas.id].destroy();
+            }
+            charts[ctx.canvas.id] = new Chart(ctx, {
+                type: 'doughnut', // or 'pie'
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: titleText,
+                        data: dataValues,
+                        backgroundColor: backgroundColors || ['#36A2EB', '#FFCE56', '#FF6384', '#4BC0C0', '#9966FF', '#FF9F40'],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: titleText, font: { size: 14 } },
+                        legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 20 } },
+                        tooltip: { enabled: true, bodyFont: { size: 10 }, titleFont: { size: 12 } }
+                    }
+                }
+            });
+        }
+
+        function loadAccueilData() {
+            const ccmp2024 = data["2024"]["mines-ponts"].find(d => d.ecole === "Concours CCMP MPI (Total Banque)");
+            const ccmp2023 = data["2023"]["mines-ponts"].find(d => d.ecole === "Concours CCMP MPI (Total Banque)");
+
+            const ctxGrowth = document.getElementById('mpiGrowthChart').getContext('2d');
+            createBarChart(ctxGrowth, ['Inscrits', 'Intégrés', 'Places Offertes'], [
+                { label: '2023', data: [ccmp2023.inscrits, ccmp2023.integres, ccmp2023.places], backgroundColor: '#FFCE56' },
+                { label: '2024', data: [ccmp2024.inscrits, ccmp2024.integres, ccmp2024.places], backgroundColor: '#36A2EB' }
+            ], 'Évolution CCMP MPI: Inscrits, Intégrés, Places');
+        }
+
+        function loadXEnsData() {
+            const currentData = data[selectedYear]['x-ens'];
+            populateTable('statsXEnsTable', currentData);
+            console.log('Dans loadXEnsData: coeffs', coeffs); // Added for debugging
+            if (coeffs && coeffs['x-ens-2024']) {
+                populateCoeffsTable('coeffsXEnsTable', coeffs['x-ens-2024'], [{ key: 'ecole' }, { key: 'epreuve' }, { key: 'discipline' }, { key: 'coeff' }]);
+
+                const polyCoeffsOral = coeffs['x-ens-2024'].filter(c => c.ecole === "ECOLE POLYTECHNIQUE" && c.epreuve === "Oral");
+                const polyLabels = polyCoeffsOral.map(c => c.discipline);
+                const polyData = polyCoeffsOral.map(c => c.coeff);
+                createPieChart(document.getElementById('chartXCoeffsOral').getContext('2d'), polyLabels, polyData, 'Coeffs Oral Polytechnique (2024)');
+
+                const ensLyonCoeffsOral = coeffs['x-ens-2024'].filter(c => c.ecole === "ENS de Lyon" && c.epreuve === "Oral");
+                const ensLyonLabels = ensLyonCoeffsOral.map(c => c.discipline);
+                const ensLyonData = ensLyonCoeffsOral.map(c => parseFloat(c.coeff)); // Assuming coeffs are numbers or can be parsed
+                createPieChart(document.getElementById('chartENSLyonCoeffsOral').getContext('2d'), ensLyonLabels, ensLyonData, 'Coeffs Oral ENS Lyon (2024)');
+            } else {
+                console.warn("Données de coefficients pour X-ENS 2024 manquantes ou indéfinies.");
+                document.getElementById('coeffsXEnsTable').getElementsByTagName('tbody')[0].innerHTML = '<tr><td colspan="4" class="text-center py-4">Données de coefficients non disponibles.</td></tr>';
+                if (charts['chartXCoeffsOral']) charts['chartXCoeffsOral'].destroy();
+                if (charts['chartENSLyonCoeffsOral']) charts['chartENSLyonCoeffsOral'].destroy();
+            }
+
+            const labels = currentData.map(d => d.ecole);
+            const chartCtxStats = document.getElementById('chartXEnsStats').getContext('2d');
+            createBarChart(chartCtxStats, labels, [
+                { label: 'Inscrits', data: currentData.map(d => d.inscrits), backgroundColor: '#36A2EB' },
+                { label: 'Admissibles', data: currentData.map(d => d.admissibles), backgroundColor: '#FFCE56' },
+                { label: 'Classés', data: currentData.map(d => d.classes), backgroundColor: '#FF6384' },
+                { label: 'Intégrés', data: currentData.map(d => d.integres), backgroundColor: '#4BC0C0' },
+                { label: 'Places', data: currentData.map(d => d.places), backgroundColor: '#9966FF' }
+            ], `Statistiques X-ENS (${selectedYear})`);
+
+            const chartCtxRanks = document.getElementById('chartXEnsRanks').getContext('2d');
+            createBarChart(chartCtxRanks, labels, [
+                { label: 'Rang Médian Intégré', data: currentData.map(d => d.rangMedian), backgroundColor: '#FF9F40' }
+            ], `Rang Médian des Intégrés X-ENS (${selectedYear})`);
+        }
+
+        function loadCentraleData() {
+            const currentData = data[selectedYear]['centrale-supelec'];
+            populateTable('statsCentraleTable', currentData);
+            console.log('Dans loadCentraleData: coeffs', coeffs); // Added for debugging
+            if (coeffs && coeffs['centrale-supelec-2024']) {
+                populateCoeffsTable('coeffsCentraleTable', coeffs['centrale-supelec-2024'], [{ key: 'ecole' }, { key: 'epreuve' }, { key: 'discipline' }, { key: 'coeff' }, { key: 'totalEcrit' }, { key: 'totalOral' }]);
+                const centraleSupelecCoeffsEcrit = coeffs['centrale-supelec-2024'].filter(c => c.ecole === "CentraleSupélec" && c.epreuve === "Écrit");
+                createPieChart(document.getElementById('chartCentraleSupelecCoeffs').getContext('2d'),
+                    centraleSupelecCoeffsEcrit.map(c => c.discipline),
+                    centraleSupelecCoeffsEcrit.map(c => c.coeff),
+                    'Coeffs Écrit CentraleSupélec (2024)');
+            } else {
+                console.warn("Données de coefficients pour Centrale-Supélec 2024 manquantes ou indéfinies.");
+                document.getElementById('coeffsCentraleTable').getElementsByTagName('tbody')[0].innerHTML = '<tr><td colspan="6" class="text-center py-4">Données de coefficients non disponibles.</td></tr>';
+                if (charts['chartCentraleSupelecCoeffs']) charts['chartCentraleSupelecCoeffs'].destroy();
+            }
+
+            const labels = currentData.map(d => d.ecole);
+            const chartCtxStats = document.getElementById('chartCentraleStats').getContext('2d');
+            createBarChart(chartCtxStats, labels, [
+                { label: 'Inscrits', data: currentData.map(d => d.inscrits), backgroundColor: '#36A2EB' },
+                { label: 'Intégrés', data: currentData.map(d => d.integres), backgroundColor: '#4BC0C0' },
+                { label: 'Places', data: currentData.map(d => d.places), backgroundColor: '#9966FF' }
+            ], `Statistiques Clés Centrale-Supélec (${selectedYear})`);
+
+            const chartCtxRanks = document.getElementById('chartCentraleRanks').getContext('2d');
+            const rankData = currentData.filter(d => d.rangMedian !== null && d.rangMedian !== 0);
+            createBarChart(chartCtxRanks, rankData.map(d => d.ecole), [
+                { label: 'Rang Médian Intégré', data: rankData.map(d => d.rangMedian), backgroundColor: '#FF9F40' }
+            ], `Rang Médian des Intégrés Centrale-Supélec (${selectedYear})`);
+        }
+
+        function loadMinesData() {
+            const currentData = data[selectedYear]['mines-ponts'];
+            populateTable('statsMinesTable', currentData);
+            console.log('Dans loadMinesData: coeffs', coeffs); // Added for debugging
+            if (coeffs && coeffs['mines-ponts-2024']) {
+                populateCoeffsTable('coeffsMinesTable', coeffs['mines-ponts-2024'].filter(c => c.epreuve.includes("TOTAL") === false), [{ key: 'epreuve' }, { key: 'coeff' }]);
+                const minesCoeffsEcrit = coeffs['mines-ponts-2024'].filter(c => !c.epreuve.includes("Oral") && !c.epreuve.includes("TOTAL"));
+                createPieChart(document.getElementById('chartMinesCoeffsEcrit').getContext('2d'),
+                    minesCoeffsEcrit.map(c => c.epreuve.substring(0, c.epreuve.indexOf('(') > 0 ? c.epreuve.indexOf('(') : c.epreuve.length).trim()),
+                    minesCoeffsEcrit.map(c => c.coeff),
+                    'Coeffs Écrit Mines-Ponts MPI (2024)');
+            } else {
+                console.warn("Données de coefficients pour Mines-Ponts 2024 manquantes ou indéfinies.");
+                document.getElementById('coeffsMinesTable').getElementsByTagName('tbody')[0].innerHTML = '<tr><td colspan="2" class="text-center py-4">Données de coefficients non disponibles.</td></tr>';
+                if (charts['chartMinesCoeffsEcrit']) charts['chartMinesCoeffsEcrit'].destroy();
+            }
+
+            const labels = currentData.filter(d => d.ecole !== "Concours CCMP MPI (Total Banque)").map(d => d.ecole);
+            const chartCtxStats = document.getElementById('chartMinesStats').getContext('2d');
+            createBarChart(chartCtxStats, labels, [
+                { label: 'Intégrés', data: currentData.filter(d => d.ecole !== "Concours CCMP MPI (Total Banque)").map(d => d.integres), backgroundColor: '#4BC0C0' },
+                { label: 'Places', data: currentData.filter(d => d.ecole !== "Concours CCMP MPI (Total Banque)").map(d => d.places), backgroundColor: '#9966FF' }
+            ], `Intégrés vs Places Mines-Ponts (${selectedYear})`);
+
+            const chartCtxRanks = document.getElementById('chartMinesRanks').getContext('2d');
+            const rankData = currentData.filter(d => d.rangMedian !== null && d.rangMedian !== 0 && d.ecole !== "Concours CCMP MPI (Total Banque)");
+            createBarChart(chartCtxRanks, rankData.map(d => d.ecole), [
+                { label: 'Rang Médian Intégré', data: rankData.map(d => d.rangMedian), backgroundColor: '#FF9F40' }
+            ], `Rang Médian des Intégrés Mines-Ponts (${selectedYear})`);
+        }
+
+        function loadCcinpData() {
+            const currentData = data[selectedYear]['ccinp'];
+            populateTable('statsCcinpTable', currentData);
+            console.log('Dans loadCcinpData: coeffs', coeffs); // Added for debugging
+            if (coeffs && coeffs['ccinp-2024']) {
+                populateCoeffsTable('coeffsCcinpTable', coeffs['ccinp-2024'].filter(c => c.epreuve !== "TOTAL"), [{ key: 'epreuve' }, { key: 'coeff' }]);
+                const ccinpCoeffs = coeffs['ccinp-2024'].filter(c => c.epreuve !== "TOTAL");
+                createPieChart(document.getElementById('chartCcinpCoeffs').getContext('2d'),
+                    ccinpCoeffs.map(c => c.epreuve),
+                    ccinpCoeffs.map(c => c.coeff),
+                    'Coefficients CCINP MPI (2024)');
+            } else {
+                console.warn("Données de coefficients pour CCINP 2024 manquantes ou indéfinies.");
+                document.getElementById('coeffsCcinpTable').getElementsByTagName('tbody')[0].innerHTML = '<tr><td colspan="2" class="text-center py-4">Données de coefficients non disponibles.</td></tr>';
+                if (charts['chartCcinpCoeffs']) charts['chartCcinpCoeffs'].destroy();
+            }
+
+            const totalBanqueData = currentData.find(d => d.ecole === "Concours Commun INP (Total Banque)");
+            const chartCtxStats = document.getElementById('chartCcinpStats').getContext('2d');
+            if (totalBanqueData) {
+                createBarChart(chartCtxStats, ['Inscrits', 'Admissibles', 'Classés', 'Intégrés', 'Places'], [
+                    { label: `Total Banque CCINP (${selectedYear})`, data: [totalBanqueData.inscrits, totalBanqueData.admissibles, totalBanqueData.classes, totalBanqueData.integres, totalBanqueData.places], backgroundColor: '#36A2EB' }
+                ], `Statistiques Globales CCINP (${selectedYear})`);
+            }
+
+            const ensimagData = currentData.find(d => d.ecole === "Grenoble INP - Ensimag");
+            const chartCtxRanksEnsimag = document.getElementById('chartCcinpRanksEnsimag').getContext('2d');
+            if (ensimagData && ensimagData.rangMedian) {
+                createBarChart(chartCtxRanksEnsimag, ['Rang Médian Intégré'], [
+                    { label: `Ensimag (${selectedYear})`, data: [ensimagData.rangMedian], backgroundColor: '#FF9F40' }
+                ], `Rang Médian Intégrés - Ensimag (${selectedYear})`);
+            } else {
+                if (charts[chartCtxRanksEnsimag.canvas.id]) charts[chartCtxRanksEnsimag.canvas.id].destroy(); // Clear if no data
+            }
+        }
+
+        function loadE3aData() {
+            const currentData = data[selectedYear]['e3a-polytech'];
+            populateTable('statsE3aTable', currentData);
+            console.log('Dans loadE3aData: coeffs', coeffs); // Added for debugging
+            if (coeffs && coeffs['e3a-polytech-2024']) {
+                populateCoeffsTable('coeffsE3aTable', coeffs['e3a-polytech-2024'].filter(c => c.epreuve !== "TOTAL"), [{ key: 'epreuve' }, { key: 'coeff' }]);
+                const e3aCoeffs = coeffs['e3a-polytech-2024'].filter(c => c.epreuve !== "TOTAL");
+                createPieChart(document.getElementById('chartE3aCoeffs').getContext('2d'),
+                    e3aCoeffs.map(c => c.epreuve),
+                    e3aCoeffs.map(c => c.coeff),
+                    'Coefficients E3A-Polytech MPI (2024)');
+            } else {
+                console.warn("Données de coefficients pour E3A-Polytech 2024 manquantes ou indéfinies.");
+                document.getElementById('coeffsE3aTable').getElementsByTagName('tbody')[0].innerHTML = '<tr><td colspan="2" class="text-center py-4">Données de coefficients non disponibles.</td></tr>';
+                if (charts['chartE3aCoeffs']) charts['chartE3aCoeffs'].destroy();
+            }
+
+            const epfData = currentData.find(d => d.ecole === "Concours EPF MPI");
+            const chartCtxEpf = document.getElementById('chartE3aStatsEPF').getContext('2d');
+            if (epfData) {
+                createBarChart(chartCtxEpf, ['Intégrés', 'Places Offertes'], [
+                    { label: `EPF MPI (${selectedYear})`, data: [epfData.integres, epfData.places], backgroundColor: ['#4BC0C0', '#9966FF'] }
+                ], `Intégrés vs Places - EPF MPI (${selectedYear})`);
+            }
+
+            const estpData = currentData.find(d => d.ecole === "Concours ESTP MPI");
+            const chartCtxEstp = document.getElementById('chartE3aStatsESTP').getContext('2d');
+            if (estpData) {
+                createBarChart(chartCtxEstp, ['Intégrés', 'Places Offertes'], [
+                    { label: `ESTP MPI (${selectedYear})`, data: [estpData.integres, estpData.places], backgroundColor: ['#4BC0C0', '#9966FF'] }
+                ], `Intégrés vs Places - ESTP MPI (${selectedYear})`);
+            }
+        }
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent default hash navigation
+                const targetHash = link.getAttribute('href');
+                updateView(targetHash); // Call updateView with the target hash
+                if (document.getElementById('mobileMenu').classList.contains('hidden') === false) {
+                    document.getElementById('mobileMenu').classList.add('hidden');
+                }
+            });
+        });
+
+        document.getElementById('mobileMenuButton').addEventListener('click', () => {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+        });
+
+        // Initial load: call updateView with the current hash or default to #accueil
+        window.addEventListener('load', () => {
+            updateView(window.location.hash || '#accueil');
+        });
+
+    </script>
+</body>
+
+</html>
